@@ -1,0 +1,27 @@
+
+# 源和目标都支持 type: 1（InfluxDB 1.x）或 type: 2（InfluxDB 2.x）
+source:
+  type: 1                 # 1 表示 InfluxDB 1.x，2 表示 2.x
+  url: "http://source-influxdb:8086"
+  user: "user1"           # 1.x 用
+  pass: "pass1"           # 1.x 用
+  db: "db1"               # 1.x 用
+  token: ""               # 2.x 用
+  org: ""                 # 2.x 用
+  bucket: ""              # 2.x 用
+
+target:
+  type: 2                 # 1 表示 InfluxDB 1.x，2 表示 2.x
+  url: "http://target-influxdb:8086"
+  user: ""                # 1.x 用
+  pass: ""                # 1.x 用
+  db: ""                  # 1.x 用
+  token: "target-token"   # 2.x 用
+  org: "target-org"       # 2.x 用
+  bucket: "target-bucket" # 2.x 用
+
+sync:
+  start: "2024-01-01T00:00:00Z"
+  end: "2025-01-01T00:00:00Z"
+  batch_size: 10000
+  resume_file: "resume.state"

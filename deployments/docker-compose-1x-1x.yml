@@ -1,0 +1,22 @@
+version: "3.8"
+services:
+  influxdb1-src:
+    image: influxdb:1.8
+    container_name: influxdb1-src
+    ports:
+      - "18086:8086"
+    environment:
+      - INFLUXDB_DB=testdb
+      - INFLUXDB_ADMIN_ENABLED=true
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=admin123
+  influxdb1-dst:
+    image: influxdb:1.8
+    container_name: influxdb1-dst
+    ports:
+      - "18087:8086"
+    environment:
+      - INFLUXDB_DB=testdb
+      - INFLUXDB_ADMIN_ENABLED=true
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=admin123

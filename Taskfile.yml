@@ -1,0 +1,48 @@
+version: "3"
+tasks:
+  build:
+    desc: 构建二进制文件
+    cmds:
+      - go build -o influxdb-sync main.go
+  run:
+    desc: 运行主程序
+    cmds:
+      - go run main.go
+  tidy:
+    desc: 整理依赖
+    cmds:
+      - go mod tidy
+  clean:
+    desc: 清理构建产物
+    cmds:
+      - rm -f influxdb-sync
+
+  test-1x-1x:
+    desc: 一键测试 1.x->1.x 同步
+    cmds:
+      - docker-compose -f deployments/docker-compose-1x-1x.yml up -d
+      - sleep 5
+      - bash scripts/write_data_1x.sh
+      - sleep 2
+      - go run cmd/influxdb1.go config.yaml
+      - docker-compose -f deployments/docker-compose-1x-1x.yml down
+
+  test-1x-2x:
+    desc: 一键测试 1.x->2.x 同步
+    cmds:
+      - docker-compose -f deployments/docker-compose-1x-2x.yml up -d
+      - sleep 8
+      - bash scripts/write_data_1x.sh
+      - sleep 2
+      - go run cmd/influxdb1.go config.yaml
+      - docker-compose -f deployments/docker-compose-1x-2x.yml down
+
+  test-2x-2x:
+    desc: 一键测试 2.x->2.x 同步
+    cmds:
+      - docker-compose -f deployments/docker-compose-2x-2x.yml up -d
+      - sleep 8
+      - bash scripts/write_data_2x.sh
+      - sleep 2
+      - go run cmd/influxdb1.go config.yaml
+      - docker-compose -f deployments/docker-compose-2x-2x.yml down
