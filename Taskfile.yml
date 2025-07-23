@@ -24,7 +24,7 @@ tasks:
       - sleep 5
       - bash scripts/write_data_1x.sh
       - sleep 2
-      - go run cmd/influxdb1.go config.yaml
+      - go run main.go config.yaml
       - docker-compose -f deployments/docker-compose-1x-1x.yml down
 
   test-1x-2x:
@@ -34,7 +34,7 @@ tasks:
       - sleep 8
       - bash scripts/write_data_1x.sh
       - sleep 2
-      - go run cmd/influxdb1.go config.yaml
+      - go run main.go config.yaml
       - docker-compose -f deployments/docker-compose-1x-2x.yml down
 
   test-2x-2x:
@@ -44,5 +44,5 @@ tasks:
       - sleep 8
       - bash scripts/write_data_2x.sh
       - sleep 2
-      - go run cmd/influxdb1.go config.yaml
+      - go run main.go config.yaml
       - docker-compose -f deployments/docker-compose-2x-2x.yml down
