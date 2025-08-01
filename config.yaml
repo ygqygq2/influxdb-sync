@@ -5,7 +5,8 @@ source:
   url: "http://localhost:18086"
   user: "admin"
   pass: "admin123"
-  db: "testdb"
+  db: "" # 为空时表示同步所有数据库
+  db_exclude: [] # 排除的数据库名列表，如 ["db1", "db2"]，为空表示不过滤
   token: ""
   org: ""
   bucket: ""
@@ -15,7 +16,9 @@ target:
   url: "http://localhost:18087"
   user: "admin"
   pass: "admin123"
-  db: "testdb"
+  db: ""
+  db_prefix: "" # 目标库名前缀，可为空
+  db_suffix: "" # 目标库名后缀，可为空
   token: ""
   org: ""
   bucket: ""
@@ -25,3 +28,4 @@ sync:
   end: "2025-01-01T00:00:00Z"
   batch_size: 10000
   resume_file: "resume.state"
+  parallel: 4 # 并发同步表的数量
