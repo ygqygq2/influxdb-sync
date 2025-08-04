@@ -1,0 +1,36 @@
+# 1.x 到 2.x 同步配置示例
+source:
+  type: 1
+  url: "http://localhost:18086"
+  user: "admin"
+  pass: "admin123"
+  db: "testdb" # 指定同步testdb数据库
+  db_exclude: []
+  token: ""
+  org: ""
+  bucket: ""
+
+target:
+  type: 2
+  url: "http://localhost:18087"
+  user: ""
+  pass: ""
+  db: ""
+  db_prefix: "" # 目标bucket名前缀，空表示无前缀
+  db_suffix: "" # 目标bucket名后缀，空表示无后缀
+  token: "testtoken"
+  org: "testorg"
+  bucket: "" # 留空使用前后缀拼接逻辑，指定则覆盖前后缀
+
+sync:
+  start: ""
+  end: ""
+  batch_size: 1000 # 大批次加快速度
+  resume_file: "resume.state"
+  parallel: 2 # 并发加快速度
+  retry_count: 3
+  retry_interval: 500
+  rate_limit: 50 # 恢复正常速度
+
+log:
+  level: "info"

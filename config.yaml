@@ -1,5 +1,4 @@
 # 源和目标都支持 type: 1（InfluxDB 1.x）或 type: 2（InfluxDB 2.x）
-
 source:
   type: 1
   url: "http://localhost:18086"
@@ -25,7 +24,13 @@ target:
 
 sync:
   start: "" # 为空时，默认为 "1970-01-01T00:00:00Z"
-  end: ""  # 为空时，默认为当前时间
+  end: "" # 为空时，默认为当前时间
   batch_size: 10000
   resume_file: "resume.state"
   parallel: 4 # 并发同步表的数量
+  retry_count: 3 # 写入失败重试次数，默认3次
+  retry_interval: 500 # 重试间隔毫秒数，默认500ms
+  rate_limit: 50 # 每批写入后限流毫秒数，默认50ms，0表示不限流
+
+log:
+  level: "info" # 日志级别: debug, info, warn, error

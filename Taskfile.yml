@@ -24,10 +24,11 @@ tasks:
       - sleep 5
       - bash scripts/write_data_1x.sh
       - sleep 2
+      - rm -f resume.state
       - go run main.go config.yaml
       - |
-        bash scripts/query_data_1x.sh
-        if grep -q "差异: [1-9][0-9]* 条" <(bash scripts/query_data_1x.sh); then
+        ./scripts/verify_sync.sh -m 1x-1x
+        if [ $? -ne 0 ]; then
           echo "数据校验失败，请人工排查！"
           exit 1
         else
@@ -41,10 +42,12 @@ tasks:
       - sleep 8
       - bash scripts/write_data_1x.sh
       - sleep 2
-      - go run main.go config.yaml
+      - docker exec influxdb2-dst influx bucket create --name testdb --token testtoken --org testorg || true
+      - rm -f resume.state
+      - go run main.go config_1x2x.yaml
       - |
-        bash scripts/query_data_2x.sh
-        if grep -q "差异: [1-9][0-9]* 条" <(bash scripts/query_data_2x.sh); then
+        ./scripts/verify_sync.sh -m 1x-2x
+        if [ $? -ne 0 ]; then
           echo "数据校验失败，请人工排查！"
           exit 1
         else
@@ -58,10 +61,11 @@ tasks:
       - sleep 8
       - bash scripts/write_data_2x.sh
       - sleep 2
-      - go run main.go config.yaml
+      - rm -f resume.state
+      - go run main.go config_2x2x.yaml
       - |
-        bash scripts/query_data_2x.sh
-        if grep -q "差异: [1-9][0-9]* 条" <(bash scripts/query_data_2x.sh); then
+        ./scripts/verify_sync.sh -m 2x-2x
+        if [ $? -ne 0 ]; then
           echo "数据校验失败，请人工排查！"
           exit 1
         else
