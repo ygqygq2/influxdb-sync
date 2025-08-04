@@ -1,14 +1,16 @@
 #!/bin/bash
 # 查询 influxdb1 源库和目标库的 cpu/mem 数据条数并对比
-url_src="http://localhost:18086/query?db=testdb"
-url_tgt="http://localhost:18087/query?db=testdb"
+
+db="testdb"
 user="admin"
 pass="admin123"
+src_container="influxdb1-src"
+tgt_container="influxdb1-dst"
 
 for m in cpu mem; do
   echo "统计 $m 行数..."
-  src_count=$(curl -s -u $user:$pass -G "$url_src" --data-urlencode "q=SELECT COUNT(value) FROM $m" | grep -o '"values":\[\[.*\]\]' | grep -o '\[.*\]' | grep -o '[0-9]\+' | head -n1)
-  tgt_count=$(curl -s -u $user:$pass -G "$url_tgt" --data-urlencode "q=SELECT COUNT(value) FROM $m" | grep -o '"values":\[\[.*\]\]' | grep -o '\[.*\]' | grep -o '[0-9]\+' | head -n1)
+  src_count=$(docker exec $src_container influx -username $user -password $pass -database $db -execute "SELECT COUNT(value) FROM $m" -format csv | awk -F',' 'NR==2{print $3}')
+  tgt_count=$(docker exec $tgt_container influx -username $user -password $pass -database $db -execute "SELECT COUNT(value) FROM $m" -format csv | awk -F',' 'NR==2{print $3}')
   src_count=${src_count:-0}
   tgt_count=${tgt_count:-0}
   echo "源库: $src_count"

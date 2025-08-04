@@ -2,6 +2,7 @@ package influxdb1
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -136,7 +137,6 @@ func Sync(ctx context.Context, cfg SyncConfig) error {
 		   // 构建查询SQL，不使用分页
 		   em := escapeMeasurement(m)
 		   q := fmt.Sprintf("SELECT * FROM %s", em)
-		   logx.Debug("查询SQL:", q)
 		   res, err := cli.Query(client.NewQuery(q, db, "ns"))
 		   if err != nil {
 			   logx.Error("查询", m, "失败:", err)
@@ -169,6 +169,14 @@ func Sync(ctx context.Context, cfg SyncConfig) error {
 								   t, _ = time.Parse(time.RFC3339Nano, v)
 							   case time.Time:
 								   t = v
+							   case int64:
+								   t = time.Unix(0, v)
+							   case float64:
+								   t = time.Unix(0, int64(v))
+							   case json.Number:
+								   if ns, err := v.Int64(); err == nil {
+									   t = time.Unix(0, ns)
+								   }
 							   }
 						   case "host", "region":
 							   if s, ok := row[idx].(string); ok {
@@ -194,7 +202,6 @@ func Sync(ctx context.Context, cfg SyncConfig) error {
 				   }
 			   }
 		   }
-		   logx.Debug(fmt.Sprintf("measurement: %s, 实际写入行数: %d", m, moved))
 		   results <- syncResult{m, nil}
 	   }
    }
