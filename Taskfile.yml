@@ -25,7 +25,14 @@ tasks:
       - bash scripts/write_data_1x.sh
       - sleep 2
       - go run main.go config.yaml
-      - docker-compose -f deployments/docker-compose-1x-1x.yml down
+      - |
+        bash scripts/query_data_1x.sh
+        if grep -q "差异: [1-9][0-9]* 条" <(bash scripts/query_data_1x.sh); then
+          echo "数据校验失败，请人工排查！"
+          exit 1
+        else
+          docker-compose -f deployments/docker-compose-1x-1x.yml down
+        fi
 
   test-1x-2x:
     desc: 一键测试 1.x->2.x 同步
@@ -35,7 +42,14 @@ tasks:
       - bash scripts/write_data_1x.sh
       - sleep 2
       - go run main.go config.yaml
-      - docker-compose -f deployments/docker-compose-1x-2x.yml down
+      - |
+        bash scripts/query_data_2x.sh
+        if grep -q "差异: [1-9][0-9]* 条" <(bash scripts/query_data_2x.sh); then
+          echo "数据校验失败，请人工排查！"
+          exit 1
+        else
+          docker-compose -f deployments/docker-compose-1x-2x.yml down
+        fi
 
   test-2x-2x:
     desc: 一键测试 2.x->2.x 同步
@@ -45,4 +59,11 @@ tasks:
       - bash scripts/write_data_2x.sh
       - sleep 2
       - go run main.go config.yaml
-      - docker-compose -f deployments/docker-compose-2x-2x.yml down
+      - |
+        bash scripts/query_data_2x.sh
+        if grep -q "差异: [1-9][0-9]* 条" <(bash scripts/query_data_2x.sh); then
+          echo "数据校验失败，请人工排查！"
+          exit 1
+        else
+          docker-compose -f deployments/docker-compose-2x-2x.yml down
+        fi

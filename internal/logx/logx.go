@@ -6,6 +6,11 @@ import (
 	"os"
 )
 
+func Debug(v ...interface{}) {
+	   logger.SetPrefix("[DEBUG] ")
+	   logger.Output(2, sprint(v...))
+}
+
 var (
 	logger = log.New(os.Stdout, "[influxdb-sync] ", log.LstdFlags|log.Lshortfile)
 )
@@ -34,4 +39,3 @@ func Fatal(v ...interface{}) {
 func sprint(v ...interface{}) string {
 	return fmt.Sprint(v...)
 }
-

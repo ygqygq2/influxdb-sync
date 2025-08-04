@@ -24,8 +24,8 @@ target:
   bucket: ""
 
 sync:
-  start: "2024-01-01T00:00:00Z"
-  end: "2025-01-01T00:00:00Z"
+  start: "" # 为空时，默认为 "1970-01-01T00:00:00Z"
+  end: ""  # 为空时，默认为当前时间
   batch_size: 10000
   resume_file: "resume.state"
   parallel: 4 # 并发同步表的数量

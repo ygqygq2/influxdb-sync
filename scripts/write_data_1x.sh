@@ -1,26 +1,32 @@
 #!/bin/bash
-# 向 influxdb1-src 写入测试数据
-curl -i -u admin:admin123 -XPOST 'http://localhost:18086/write?db=testdb' --data-binary 'cpu,host=host1,region=uswest value=0.64'
-curl -i -u admin:admin123 -XPOST 'http://localhost:18086/write?db=testdb' --data-binary 'cpu,host=host2,region=uswest value=0.72'
-curl -i -u admin:admin123 -XPOST 'http://localhost:18086/write?db=testdb' --data-binary 'mem,host=host1,region=uswest value=33.1'
+# 向 influxdb1-src 批量写入大数据量测试数据
+url="http://localhost:18086/write?db=testdb"
+user="admin"
+pass="admin123"
 
 
-# 查询写入结果（带转码）
-urlencode() {
-    # 用于简单转码SQL语句
-    local LANG=C
-    local length="${#1}"
-    for (( i = 0; i < length; i++ )); do
-        local c="${1:i:1}"
-        case $c in
-            [a-zA-Z0-9.~_-]) printf "$c" ;;
-            ' ') printf '%%20' ;;
-            *) printf '%%%02X' "'${c}'" ;;
-        esac
-    done
-}
+# 生成 1 万条 cpu 数据
+echo "批量写入 cpu..."
+for i in {1..10}; do
+  batch=""
+  for j in {1..1000}; do
+    ts=$(( (i-1)*1000 + j ))
+    val=$(awk "BEGIN {print 0.5 + ($ts % 100) * 0.01}")
+    batch+="cpu,host=host$((ts%10)),region=uswest value=$val $(( 1690000000000000000 + ts * 1000000 ))\n"
+  done
+  echo -e "$batch" | curl -s -u $user:$pass -XPOST "$url" --data-binary @-
+done
 
-echo -e "\n--- 查询 cpu ---"
-curl -s -u admin:admin123 "http://localhost:18086/query?db=testdb&q=$(urlencode 'SELECT * FROM cpu')&pretty=true"
-echo -e "\n--- 查询 mem ---"
-curl -s -u admin:admin123 "http://localhost:18086/query?db=testdb&q=$(urlencode 'SELECT * FROM mem')&pretty=true"
+# 生成 1 万条 mem 数据
+echo "批量写入 mem..."
+for i in {1..10}; do
+  batch=""
+  for j in {1..1000}; do
+    ts=$(( (i-1)*1000 + j ))
+    val=$(awk "BEGIN {print 20 + ($ts % 100) * 0.1}")
+    batch+="mem,host=host$((ts%10)),region=uswest value=$val $(( 1690000000000000000 + ts * 1000000 ))\n"
+  done
+  echo -e "$batch" | curl -s -u $user:$pass -XPOST "$url" --data-binary @-
+done
+
+echo "写入完成"
