@@ -1,0 +1,80 @@
+# .goreleaser.yaml
+# Make sure to check the documentation at https://goreleaser.com
+
+version: 2
+
+before:
+  hooks:
+    - .github/hooks/install-build-tools.sh
+    - .github/hooks/install-upx.sh
+
+builds:
+  - id: "build-cmd"
+    main: main.go
+    binary: "bin/{{ .ProjectName }}"
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - "-X main.version={{.Version}}"
+    goos:
+      - linux
+      - windows
+      # - darwin
+    goarch:
+      - amd64
+      # - arm64
+
+upx:
+  - # Whether to enable it or not.
+    enabled: true
+    ids:
+      - build-cmd
+    goos:
+      - linux
+      - windows
+    #  - darwin
+    goarch:
+      - amd64
+      # - arm64
+    # goarm:
+    #   - 7
+    # goamd64:
+    #   - v1
+    # Compress argument.
+    # Valid options are from '1' (faster) to '9' (better), and 'best'.
+    compress: "5"
+    # Whether to try LZMA (slower).
+    lzma: false
+    # Whether to try all methods and filters (slow).
+    brute: false
+
+archives:
+  - id: cmd
+    ids:
+      - build-cmd
+    formats: "zip"
+    name_template: >-
+      {{- .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end -}}
+    wrap_in_directory: true
+    files:
+      - config.yaml
+      - README.md
+
+checksum:
+  name_template: "checksums.txt"
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+release:
+  draft: true
+  mode: append
+  extra_files:
+    - glob: dist/**/*.zip
+    - glob: dist/checksums.txt
+  name_template: "Release {{.Tag}}"

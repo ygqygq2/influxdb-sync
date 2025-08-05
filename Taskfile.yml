@@ -4,6 +4,49 @@ tasks:
     desc: 构建二进制文件
     cmds:
       - go build -o influxdb-sync main.go
+
+  build-release:
+    desc: 构建发布包 (多平台)
+    vars:
+      VERSION: '{{.VERSION | default "dev"}}'
+      BUILD_TIME:
+        sh: date -u '+%Y-%m-%d %H:%M:%S UTC'
+    cmds:
+      - |
+        platforms=(
+          "linux/amd64"
+          "linux/arm64" 
+          "darwin/amd64"
+          "darwin/arm64"
+          "windows/amd64"
+        )
+
+        for platform in "${platforms[@]}"; do
+          IFS='/' read -r GOOS GOARCH <<< "$platform"
+          
+          if [ "$GOOS" = "windows" ]; then
+            SUFFIX="windows-amd64.exe"
+            BINARY_NAME="influxdb-sync-{{.VERSION}}-${SUFFIX}"
+          else
+            SUFFIX="${GOOS}-${GOARCH}"
+            BINARY_NAME="influxdb-sync-{{.VERSION}}-${SUFFIX}"
+          fi
+          
+          echo "构建 ${platform} -> ${BINARY_NAME}"
+          
+          CGO_ENABLED=0 GOOS=$GOOS GOARCH=$GOARCH go build \
+            -ldflags="-s -w -X main.version={{.VERSION}} -X main.buildTime={{.BUILD_TIME}}" \
+            -o "${BINARY_NAME}" \
+            ./main.go
+          
+          # 创建压缩包
+          if [ "$GOOS" = "windows" ]; then
+            zip "${BINARY_NAME%.exe}.zip" "${BINARY_NAME}" README.md config.yaml
+          else
+            tar -czf "${BINARY_NAME}.tar.gz" "${BINARY_NAME}" README.md config.yaml
+          fi
+        done
+
   run:
     desc: 运行主程序
     cmds:
@@ -12,10 +55,22 @@ tasks:
     desc: 整理依赖
     cmds:
       - go mod tidy
+  release-snapshot:
+    desc: 构建快照版本 (本地测试用)
+    cmds:
+      - goreleaser release --snapshot --clean
+      - echo "构建产物在 dist/ 目录中"
+
+  release-check:
+    desc: 检查 GoReleaser 配置
+    cmds:
+      - goreleaser check
+
   clean:
     desc: 清理构建产物
     cmds:
       - rm -f influxdb-sync
+      - rm -rf dist/
 
   test-1x-1x:
     desc: 一键测试 1.x->1.x 同步

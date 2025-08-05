@@ -4,8 +4,8 @@ source:
   url: "http://localhost:18086"
   user: "admin"
   pass: "admin123"
-  db: "testdb" # 指定同步testdb数据库
-  db_exclude: []
+  db: "" # 为空时表示同步所有数据库
+  db_exclude: [] # 排除的数据库名列表，如 ["db1", "db2"]，为空表示不过滤
   token: ""
   org: ""
   bucket: ""

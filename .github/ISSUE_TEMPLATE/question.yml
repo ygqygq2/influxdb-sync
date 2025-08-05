@@ -1,0 +1,74 @@
+name: ❓ 问题咨询
+description: 询问使用方法或寻求帮助
+title: "[Question] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您的提问！我们会尽快回复。
+
+  - type: textarea
+    id: question
+    attributes:
+      label: ❓ 问题描述
+      description: 详细描述你的问题
+      placeholder: 请尽可能详细地描述你的问题...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: 📂 问题类别
+      description: 你的问题属于哪个类别？
+      options:
+        - 安装和配置
+        - 同步功能使用
+        - 性能相关
+        - 错误排查
+        - 最佳实践
+        - 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: 🔍 已尝试的方法
+      description: 你已经尝试了哪些方法？
+      placeholder: |
+        例如：
+        - 查看了 README 文档
+        - 搜索了现有 issues
+        - 尝试了不同的配置
+        - ...
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 🌍 环境信息
+      description: 运行环境信息（如果相关）
+      value: |
+        - OS: [e.g. Ubuntu 20.04, macOS 12.0, Windows 10]
+        - Go 版本: [e.g. 1.21.0]
+        - InfluxDB 版本: [e.g. 1.8.10, 2.7.0]
+        - influxdb-sync 版本: [e.g. v1.0.0]
+
+  - type: textarea
+    id: config
+    attributes:
+      label: ⚙️ 配置文件（可选）
+      description: 如果问题与配置相关，请提供配置文件（请移除敏感信息）
+      render: yaml
+      placeholder: |
+        source:
+          type: "influxdb1"
+          # ...
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 📝 其他信息
+      description: 任何其他相关信息
+      placeholder: 其他可能有用的信息...

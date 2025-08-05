@@ -1,0 +1,110 @@
+name: 🐛 Bug 报告
+description: 报告一个 bug 帮助我们改进
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您花时间填写这个 bug 报告！
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 🐛 问题描述
+      description: 简要描述发生了什么问题
+      placeholder: 告诉我们发生了什么！
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 🔄 复现步骤
+      description: 详细说明如何复现这个问题
+      placeholder: |
+        1. 运行命令 '...'
+        2. 配置文件设置 '...'
+        3. 看到错误 '...'
+      value: |
+        1. 
+        2. 
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: ✅ 期望行为
+      description: 描述你期望发生什么
+      placeholder: 应该发生什么？
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: ❌ 实际行为
+      description: 描述实际发生了什么
+      placeholder: 实际发生了什么？
+    validations:
+      required: true
+
+  - type: dropdown
+    id: sync-mode
+    attributes:
+      label: 📊 同步模式
+      description: 发生问题的同步模式
+      options:
+        - 1x-1x (InfluxDB 1.x 到 1.x)
+        - 1x-2x (InfluxDB 1.x 到 2.x)
+        - 2x-2x (InfluxDB 2.x 到 2.x)
+        - 不确定
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: ⚙️ 配置文件
+      description: 请提供相关的配置文件内容（请移除敏感信息）
+      render: yaml
+      placeholder: |
+        source:
+          type: "influxdb1"
+          # ...
+        target:
+          type: "influxdb2" 
+          # ...
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 📋 日志信息
+      description: 请提供相关的错误日志或输出
+      render: shell
+      placeholder: |
+        [ERROR] 2025/08/04 18:00:00 syncer.go:123: error message
+        [INFO] 2025/08/04 18:00:01 syncer.go:124: info message
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 🌍 环境信息
+      description: 运行环境信息
+      value: |
+        - OS: [e.g. Ubuntu 20.04, macOS 12.0, Windows 10]
+        - Go 版本: [e.g. 1.21.0]
+        - InfluxDB 源版本: [e.g. 1.8.10]
+        - InfluxDB 目标版本: [e.g. 2.7.0]
+        - influxdb-sync 版本: [e.g. v1.0.0]
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 📝 其他信息
+      description: 任何其他相关信息
+      placeholder: 其他可能有用的信息...

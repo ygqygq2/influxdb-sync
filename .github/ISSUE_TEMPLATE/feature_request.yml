@@ -1,0 +1,84 @@
+name: ✨ 功能请求
+description: 建议一个新功能或改进
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您提出功能建议！
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🤔 问题描述
+      description: 描述当前的问题或限制
+      placeholder: 当前哪些地方不够好？有什么困扰？
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 解决方案
+      description: 描述你想要的解决方案
+      placeholder: 你希望怎样解决这个问题？
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 替代方案
+      description: 描述你考虑过的其他解决方案
+      placeholder: 还有其他可能的解决方案吗？
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 📈 优先级
+      description: 这个功能对你有多重要？
+      options:
+        - 低 - 有更好，没有也无所谓
+        - 中 - 会显著改善使用体验
+        - 高 - 对我的工作流程很重要
+        - 紧急 - 阻碍了关键功能的使用
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: 🎯 功能范围
+      description: 这个功能涉及哪些方面？（可多选）
+      options:
+        - label: 同步性能优化
+        - label: 新的同步模式支持
+        - label: 配置文件改进
+        - label: 错误处理改进
+        - label: 监控和日志改进
+        - label: 断点续传改进
+        - label: 数据过滤功能
+        - label: CLI 用户界面改进
+        - label: 文档改进
+        - label: 其他
+
+  - type: textarea
+    id: usecase
+    attributes:
+      label: 📖 使用场景
+      description: 详细描述你的使用场景
+      placeholder: |
+        例如：
+        - 我需要同步特定时间范围的数据
+        - 我希望能够排除某些 measurement
+        - 我需要在同步过程中转换数据格式
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 📝 其他信息
+      description: 任何其他相关信息、参考资料或实现建议
+      placeholder: 其他补充信息...

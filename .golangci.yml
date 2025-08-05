@@ -1,0 +1,28 @@
+# golangci-lint 配置文件
+# 使用基础配置，确保兼容性
+
+linters:
+  enable:
+    - errcheck # 检查未处理的错误
+    - gosimple # 简化代码建议
+    - govet # Go vet 检查
+    - ineffassign # 检测无效赋值
+    - staticcheck # 静态分析检查
+    - unused # 检查未使用的常量、变量、函数等
+    - gofmt # 检查代码格式
+    - goimports # 检查导入格式
+    - misspell # 拼写检查
+    - gosec # 安全检查
+    - gocyclo # 圈复杂度检查
+    - revive # 替代 golint 的 linter
+
+  disable:
+    - typecheck # 由于某些版本可能有问题，暂时禁用
+
+run:
+  timeout: 5m
+  tests: true
+
+issues:
+  max-issues-per-linter: 50
+  max-same-issues: 3
