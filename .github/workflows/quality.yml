@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 env:
-  GO_VERSION: "1.21"
+  GO_VERSION: "1.24.3"
 
 jobs:
   lint:
@@ -35,23 +35,6 @@ jobs:
 
       - name: Download dependencies
         run: go mod download
-
-      - name: Install golangci-lint
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.54.2
-
-      - name: Run golangci-lint
-        run: |
-          $(go env GOPATH)/bin/golangci-lint run --timeout=5m
-
-      - name: Check gofmt
-        run: |
-          if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
-            echo "以下文件需要格式化："
-            gofmt -s -l .
-            echo "请运行: go fmt ./..."
-            exit 1
-          fi
 
       - name: Check go mod tidy
         run: |

@@ -47,7 +47,8 @@ func NewDataTarget(config DataTargetConfig) *DataTarget {
 
 // 数据源接口实现
 func (ds *DataSource) Connect() error {
-	cli, err := NewClient(ds.config.Addr, ds.config.User, ds.config.Pass, 0)
+	// 设置30秒超时，避免长时间阻塞
+	cli, err := NewClient(ds.config.Addr, ds.config.User, ds.config.Pass, 30*time.Second)
 	if err != nil {
 		return err
 	}
@@ -144,7 +145,10 @@ func (ds *DataSource) QueryData(db, measurement string, startTime int64, batchSi
 		q = fmt.Sprintf("SELECT * FROM %s WHERE time > %d ORDER BY time ASC LIMIT %d", em, startTime, batchSize)
 	}
 
+	logx.Debug(fmt.Sprintf("执行查询: %s", q))
+	queryStart := time.Now()
 	res, err := ds.cli.Query(client.NewQuery(q, db, "ns"))
+	logx.Debug(fmt.Sprintf("查询耗时: %v", time.Since(queryStart)))
 	if err != nil {
 		return nil, 0, err
 	}
@@ -242,7 +246,8 @@ func (ds *DataSource) QueryData(db, measurement string, startTime int64, batchSi
 
 // 数据目标接口实现
 func (dt *DataTarget) Connect() error {
-	cli, err := NewClient(dt.config.Addr, dt.config.User, dt.config.Pass, 0)
+	// 设置30秒超时，避免长时间阻塞
+	cli, err := NewClient(dt.config.Addr, dt.config.User, dt.config.Pass, 30*time.Second)
 	if err != nil {
 		return err
 	}

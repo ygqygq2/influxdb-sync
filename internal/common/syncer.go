@@ -184,9 +184,13 @@ func (s *Syncer) syncDatabase(ctx context.Context, db string, startTimeNano int6
 // 工作协程
 func (s *Syncer) worker(ctx context.Context, db string, startTimeNano int64, batchSize int, jobs <-chan string, results chan<- SyncResult) {
 	for measurement := range jobs {
+		logx.Info(fmt.Sprintf("开始处理 measurement: %s", measurement))
+		start := time.Now()
 		if err := s.syncMeasurement(ctx, db, measurement, startTimeNano, batchSize); err != nil {
+			logx.Error(fmt.Sprintf("处理 measurement %s 失败，耗时: %v，错误: %v", measurement, time.Since(start), err))
 			results <- SyncResult{Measurement: measurement, Error: err}
 		} else {
+			logx.Info(fmt.Sprintf("处理 measurement %s 成功，耗时: %v", measurement, time.Since(start)))
 			results <- SyncResult{Measurement: measurement, Error: nil}
 		}
 	}
@@ -232,13 +236,18 @@ func (s *Syncer) syncMeasurement(ctx context.Context, db, measurement string, st
 
 	for {
 		// 查询数据
-		logx.Debug(fmt.Sprintf("查询 %s，起始时间: %d", measurement, lastTime))
+		logx.Info(fmt.Sprintf("开始查询 %s，起始时间: %d", measurement, lastTime))
+		queryStart := time.Now()
 		points, maxTime, err := s.source.QueryData(db, measurement, lastTime, batchSize)
+		queryDuration := time.Since(queryStart)
 		if err != nil {
+			logx.Error(fmt.Sprintf("查询 %s 失败，耗时: %v，错误: %v", measurement, queryDuration, err))
 			return err
 		}
+		logx.Info(fmt.Sprintf("查询 %s 完成，耗时: %v，返回 %d 个点", measurement, queryDuration, len(points)))
 
 		if len(points) == 0 {
+			logx.Info(fmt.Sprintf("measurement %s 没有更多数据", measurement))
 			break // 没有更多数据
 		}
 
