@@ -34,12 +34,12 @@ func TestSync1x2xAdditional(t *testing.T) {
 
 	ctx := context.Background()
 	err := Sync1x2x(ctx, cfg)
-	
+
 	// 期望连接错误，因为没有真实的InfluxDB实例
 	if err == nil {
 		t.Error("期望连接错误，但没有错误")
 	}
-	
+
 	t.Logf("预期的连接错误: %v", err)
 }
 
@@ -115,8 +115,8 @@ func TestSyncConfigValidationHelper(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// 手动验证配置
-			valid := tc.config.SourceAddr != "" && 
-				tc.config.TargetAddr != "" && 
+			valid := tc.config.SourceAddr != "" &&
+				tc.config.TargetAddr != "" &&
 				tc.config.BatchSize > 0
 
 			if valid != tc.shouldPass {

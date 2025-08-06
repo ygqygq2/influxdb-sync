@@ -1,60 +1,170 @@
 version: "3"
+
+vars:
+  VERSION: '{{.VERSION | default "dev"}}'
+  BUILD_TIME:
+    sh: date -u '+%Y-%m-%d %H:%M:%S UTC'
+  COVERAGE_THRESHOLD: 50
+
 tasks:
-  build:
-    desc: 构建二进制文件
+  # === 依赖管理 ===
+  deps:
+    desc: 下载依赖
     cmds:
-      - go build -o influxdb-sync main.go
+      - go mod download
 
-  build-release:
-    desc: 构建发布包 (多平台)
-    vars:
-      VERSION: '{{.VERSION | default "dev"}}'
-      BUILD_TIME:
-        sh: date -u '+%Y-%m-%d %H:%M:%S UTC'
-    cmds:
-      - |
-        platforms=(
-          "linux/amd64"
-          "linux/arm64" 
-          "darwin/amd64"
-          "darwin/arm64"
-          "windows/amd64"
-        )
-
-        for platform in "${platforms[@]}"; do
-          IFS='/' read -r GOOS GOARCH <<< "$platform"
-          
-          if [ "$GOOS" = "windows" ]; then
-            SUFFIX="windows-amd64.exe"
-            BINARY_NAME="influxdb-sync-{{.VERSION}}-${SUFFIX}"
-          else
-            SUFFIX="${GOOS}-${GOARCH}"
-            BINARY_NAME="influxdb-sync-{{.VERSION}}-${SUFFIX}"
-          fi
-          
-          echo "构建 ${platform} -> ${BINARY_NAME}"
-          
-          CGO_ENABLED=0 GOOS=$GOOS GOARCH=$GOARCH go build \
-            -ldflags="-s -w -X main.version={{.VERSION}} -X main.buildTime={{.BUILD_TIME}}" \
-            -o "${BINARY_NAME}" \
-            ./main.go
-          
-          # 创建压缩包
-          if [ "$GOOS" = "windows" ]; then
-            zip "${BINARY_NAME%.exe}.zip" "${BINARY_NAME}" README.md config.yaml
-          else
-            tar -czf "${BINARY_NAME}.tar.gz" "${BINARY_NAME}" README.md config.yaml
-          fi
-        done
-
-  run:
-    desc: 运行主程序
-    cmds:
-      - go run main.go
   tidy:
     desc: 整理依赖
     cmds:
       - go mod tidy
+
+  deps-check:
+    desc: 检查依赖是否需要更新
+    cmds:
+      - go mod tidy
+      - |
+        if ! git diff --exit-code go.mod go.sum; then
+          echo "❌ go.mod 或 go.sum 文件需要更新"
+          echo "请运行: task tidy"
+          exit 1
+        else
+          echo "✅ 依赖文件是最新的"
+        fi
+
+  # === 代码质量检查 ===
+  vet:
+    desc: 运行 Go vet 静态分析
+    cmds:
+      - go vet ./...
+
+  fmt:
+    desc: 格式化代码
+    cmds:
+      - go fmt ./...
+
+  fmt-check:
+    desc: 检查代码格式
+    cmds:
+      - |
+        unformatted=$(gofmt -l .)
+        if [ -n "$unformatted" ]; then
+          echo "❌ 以下文件需要格式化:"
+          echo "$unformatted"
+          echo "请运行: task fmt"
+          exit 1
+        else
+          echo "✅ 代码格式正确"
+        fi
+
+  # === 测试相关 ===
+  test:
+    desc: 运行单元测试
+    cmds:
+      - go test -v ./...
+
+  test-race:
+    desc: 运行单元测试 (带竞态检测)
+    cmds:
+      - go test -v -race ./...
+
+  test-coverage:
+    desc: 运行测试并生成覆盖率报告
+    cmds:
+      - go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+      - go tool cover -html=coverage.out -o coverage.html
+      - |
+        COVERAGE=$(go tool cover -func=coverage.out | grep total: | awk '{print $3}' | sed 's/%//')
+        echo "当前测试覆盖率: ${COVERAGE}%"
+
+        if (( $(echo "$COVERAGE < {{.COVERAGE_THRESHOLD}}" | bc -l) )); then
+          echo "❌ 测试覆盖率 ${COVERAGE}% 低于要求的 {{.COVERAGE_THRESHOLD}}%"
+          exit 1
+        else
+          echo "✅ 测试覆盖率 ${COVERAGE}% 达到要求"
+        fi
+
+  test-short:
+    desc: 运行快速测试 (跳过长时间运行的测试)
+    cmds:
+      - go test -v -short ./...
+
+  # === 构建相关 ===
+  build:
+    desc: 构建二进制文件 (使用 GoReleaser)
+    cmds:
+      - goreleaser build --single-target --snapshot --clean
+
+  build-with-version:
+    desc: 构建带版本信息的二进制文件 (使用 GoReleaser)
+    cmds:
+      - goreleaser build --single-target --snapshot --clean
+
+  build-release:
+    desc: 构建发布包 (多平台，使用 GoReleaser)
+    cmds:
+      - goreleaser build --snapshot --clean
+
+  # === CI/CD 任务 ===
+  ci-quality:
+    desc: CI 代码质量检查 (包含所有检查项)
+    deps: [deps]
+    cmds:
+      - task: deps-check
+      - task: fmt-check
+      - task: vet
+      - task: test-coverage
+      - task: build
+
+  ci-integration:
+    desc: CI 集成测试 (指定模式)
+    cmds:
+      - |
+        if [ -z "$SYNC_MODE" ]; then
+          echo "❌ 请设置 SYNC_MODE 环境变量 (1x-1x, 1x-2x, 2x-2x)"
+          exit 1
+        fi
+        task test-$SYNC_MODE
+
+  # === 运行相关 ===
+  run:
+    desc: 运行主程序
+    cmds:
+      - go run main.go
+
+  run-with-config:
+    desc: 使用指定配置文件运行
+    cmds:
+      - |
+        if [ -z "$CONFIG" ]; then
+          echo "❌ 请设置 CONFIG 环境变量指定配置文件"
+          exit 1
+        fi
+        go run main.go $CONFIG
+
+  # === 清理相关 ===
+  clean:
+    desc: 清理构建产物
+    cmds:
+      - rm -f influxdb-sync
+      - rm -f coverage.out coverage.html
+      - rm -f resume.state
+      - rm -rf dist/
+
+  clean-all:
+    desc: 清理所有产物 (包括 Docker)
+    deps: [clean]
+    cmds:
+      - docker-compose -f deployments/docker-compose-1x-1x.yml down --volumes --remove-orphans || true
+      - docker-compose -f deployments/docker-compose-1x-2x.yml down --volumes --remove-orphans || true
+      - docker-compose -f deployments/docker-compose-2x-2x.yml down --volumes --remove-orphans || true
+      - docker system prune -f || true
+
+  # === 发布相关 ===
+  release:
+    desc: 发布版本 (需要 Git 标签)
+    cmds:
+      - goreleaser release --clean
+
   release-snapshot:
     desc: 构建快照版本 (本地测试用)
     cmds:
@@ -66,11 +176,7 @@ tasks:
     cmds:
       - goreleaser check
 
-  clean:
-    desc: 清理构建产物
-    cmds:
-      - rm -f influxdb-sync
-      - rm -rf dist/
+  # === 集成测试 ===
 
   test-1x-1x:
     desc: 一键测试 1.x->1.x 同步

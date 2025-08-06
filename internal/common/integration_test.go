@@ -12,7 +12,7 @@ func TestSyncerWithRealConfiguration(t *testing.T) {
 	// 创建临时resume文件用于测试
 	tmpDir := t.TempDir()
 	resumeFile := filepath.Join(tmpDir, "test_resume.state")
-	
+
 	// 写入resume时间
 	resumeTime := "2024-06-01T12:00:00Z"
 	err := os.WriteFile(resumeFile, []byte(resumeTime), 0644)
@@ -68,7 +68,7 @@ func TestSyncerWithRealConfiguration(t *testing.T) {
 		if err != nil {
 			t.Errorf("同步执行失败: %v", err)
 		}
-		
+
 		// 验证数据已写入
 		if len(target.writtenData) == 0 {
 			t.Error("应该有数据被写入目标")

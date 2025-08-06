@@ -16,7 +16,7 @@ func TestSetLevel(t *testing.T) {
 
 	// 测试设置不同级别
 	testCases := []string{"debug", "info", "warn", "error"}
-	
+
 	for _, level := range testCases {
 		SetLevel(level)
 		if currentLevel != level {
@@ -67,7 +67,7 @@ func TestShouldLog(t *testing.T) {
 		currentLevel = tc.currentLevel
 		result := shouldLog(tc.targetLevel)
 		if result != tc.expected {
-			t.Errorf("当前级别 %s, 目标级别 %s, 期望 %v, 实际 %v", 
+			t.Errorf("当前级别 %s, 目标级别 %s, 期望 %v, 实际 %v",
 				tc.currentLevel, tc.targetLevel, tc.expected, result)
 		}
 	}
@@ -85,7 +85,7 @@ func TestLogFunctions(t *testing.T) {
 	// 创建缓冲区用于捕获日志输出
 	var buf bytes.Buffer
 	logger = log.New(&buf, "", 0)
-	
+
 	// 设置为debug级别，这样所有级别都会输出
 	SetLevel("debug")
 
@@ -147,7 +147,7 @@ func TestLogLevelFiltering(t *testing.T) {
 	// 创建缓冲区用于捕获日志输出
 	var buf bytes.Buffer
 	logger = log.New(&buf, "", 0)
-	
+
 	// 设置为warn级别
 	SetLevel("warn")
 

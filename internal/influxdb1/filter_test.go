@@ -24,7 +24,7 @@ func TestFilterLogic(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			result := escapeMeasurement(tc.measurement)
 			if result != tc.expectedEscape {
-				t.Errorf("escapeMeasurement(%q) = %q, 期望 %q", 
+				t.Errorf("escapeMeasurement(%q) = %q, 期望 %q",
 					tc.measurement, result, tc.expectedEscape)
 			}
 		})
@@ -54,7 +54,7 @@ func TestDataSourceTargetConfigVariations(t *testing.T) {
 				User: tc.user,
 				Pass: tc.pass,
 			}
-			
+
 			source := NewDataSource(sourceConfig)
 			if source.config.Addr != tc.addr {
 				t.Errorf("数据源地址配置错误: 期望 %s, 实际 %s", tc.addr, source.config.Addr)
@@ -72,7 +72,7 @@ func TestDataSourceTargetConfigVariations(t *testing.T) {
 				User: tc.user,
 				Pass: tc.pass,
 			}
-			
+
 			target := NewDataTarget(targetConfig)
 			if target.config.Addr != tc.addr {
 				t.Errorf("数据目标地址配置错误: 期望 %s, 实际 %s", tc.addr, target.config.Addr)
@@ -98,7 +98,7 @@ func TestConfigStructFieldsCompleteness(t *testing.T) {
 	sourceConfig.Pass = "test-source-pass"
 
 	targetConfig.Addr = "http://test-target:8087"
-	targetConfig.User = "test-target-user" 
+	targetConfig.User = "test-target-user"
 	targetConfig.Pass = "test-target-pass"
 
 	// 验证字段访问性

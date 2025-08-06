@@ -12,35 +12,35 @@ import (
 func TestSync2x2xDetailedCoverage(t *testing.T) {
 	// 测试2x到2x同步的详细场景
 	cfg := common.SyncConfig{
-		SourceAddr:      "http://localhost:8086",
-		SourceToken:     "source-token-12345",
-		SourceOrg:       "source-organization",
-		SourceBucket:    "source-bucket",
-		TargetAddr:      "http://localhost:8087",
-		TargetToken:     "target-token-67890",
-		TargetOrg:       "target-organization", 
-		TargetBucket:    "target-bucket",
-		TargetDBPrefix:  "migrated_",
-		TargetDBSuffix:  "_v2",
-		BatchSize:       1500,
-		Start:           "2024-01-01T00:00:00Z",
-		End:             "2024-12-31T23:59:59Z",
-		ResumeFile:      "sync_2x2x_resume.state",
-		Parallel:        6,
-		RetryCount:      5,
-		RetryInterval:   1000,
-		RateLimit:       25,
-		LogLevel:        "debug",
+		SourceAddr:     "http://localhost:8086",
+		SourceToken:    "source-token-12345",
+		SourceOrg:      "source-organization",
+		SourceBucket:   "source-bucket",
+		TargetAddr:     "http://localhost:8087",
+		TargetToken:    "target-token-67890",
+		TargetOrg:      "target-organization",
+		TargetBucket:   "target-bucket",
+		TargetDBPrefix: "migrated_",
+		TargetDBSuffix: "_v2",
+		BatchSize:      1500,
+		Start:          "2024-01-01T00:00:00Z",
+		End:            "2024-12-31T23:59:59Z",
+		ResumeFile:     "sync_2x2x_resume.state",
+		Parallel:       6,
+		RetryCount:     5,
+		RetryInterval:  1000,
+		RateLimit:      25,
+		LogLevel:       "debug",
 	}
 
 	ctx := context.Background()
 	err := Sync2x2x(ctx, cfg)
-	
+
 	// 期望连接错误，因为没有真实的InfluxDB实例
 	if err == nil {
 		t.Error("期望连接错误，但没有错误")
 	}
-	
+
 	t.Logf("预期的连接错误: %v", err)
 }
 
@@ -53,28 +53,28 @@ func TestSync2x2xConfigurationVariations(t *testing.T) {
 		{
 			name: "最小配置",
 			config: common.SyncConfig{
-				SourceAddr:   "http://localhost:8086",
-				SourceToken:  "src-token",
-				SourceOrg:    "src-org",
-				TargetAddr:   "http://localhost:8087",
-				TargetToken:  "tgt-token",
-				TargetOrg:    "tgt-org",
-				BatchSize:    100,
+				SourceAddr:  "http://localhost:8086",
+				SourceToken: "src-token",
+				SourceOrg:   "src-org",
+				TargetAddr:  "http://localhost:8087",
+				TargetToken: "tgt-token",
+				TargetOrg:   "tgt-org",
+				BatchSize:   100,
 			},
 		},
 		{
 			name: "高性能配置",
 			config: common.SyncConfig{
-				SourceAddr:   "http://localhost:8086",
-				SourceToken:  "src-token",
-				SourceOrg:    "src-org",
-				TargetAddr:   "http://localhost:8087",
-				TargetToken:  "tgt-token",
-				TargetOrg:    "tgt-org",
-				BatchSize:    10000,
-				Parallel:     16,
-				RetryCount:   1,
-				RateLimit:    0,
+				SourceAddr:  "http://localhost:8086",
+				SourceToken: "src-token",
+				SourceOrg:   "src-org",
+				TargetAddr:  "http://localhost:8087",
+				TargetToken: "tgt-token",
+				TargetOrg:   "tgt-org",
+				BatchSize:   10000,
+				Parallel:    16,
+				RetryCount:  1,
+				RateLimit:   0,
 			},
 		},
 		{
@@ -119,12 +119,12 @@ func TestSync2x2xConfigurationVariations(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.Background()
 			err := Sync2x2x(ctx, tc.config)
-			
+
 			// 所有配置都应该因为连接失败而返回错误
 			if err == nil {
 				t.Error("期望连接错误，但没有错误")
 			}
-			
+
 			t.Logf("配置 %s 的预期连接错误: %v", tc.name, err)
 		})
 	}
@@ -133,10 +133,10 @@ func TestSync2x2xConfigurationVariations(t *testing.T) {
 func TestSync2x2xParameterValidation(t *testing.T) {
 	// 测试参数验证场景
 	testCases := []struct {
-		name           string
-		config         common.SyncConfig
-		expectError    bool
-		errorKeyword   string
+		name         string
+		config       common.SyncConfig
+		expectError  bool
+		errorKeyword string
 	}{
 		{
 			name: "空源地址",
@@ -214,11 +214,11 @@ func TestSync2x2xParameterValidation(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.Background()
 			err := Sync2x2x(ctx, tc.config)
-			
+
 			if tc.expectError && err == nil {
 				t.Errorf("期望错误但没有收到错误")
 			}
-			
+
 			if err != nil {
 				t.Logf("收到预期错误: %v", err)
 			}

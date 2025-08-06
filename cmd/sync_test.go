@@ -13,7 +13,7 @@ func TestShowUsage(t *testing.T) {
 			t.Errorf("ShowUsage发生panic: %v", r)
 		}
 	}()
-	
+
 	ShowUsage()
 }
 
@@ -21,7 +21,7 @@ func TestSyncModeValidation(t *testing.T) {
 	// 创建测试配置文件
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "test_config.yaml")
-	
+
 	configContent := `
 source:
   type: 1
@@ -55,15 +55,15 @@ log:
 		mode        string
 		expectError bool
 	}{
-		{"", false},      // 默认模式
-		{"1x1x", false},  // 显式1x1x模式
-		{"1x-1x", false}, // 带连字符的1x1x模式
-		{"1x2x", false},  // 1x到2x模式
-		{"1x-2x", false}, // 带连字符的1x2x模式
-		{"2x2x", false},  // 2x到2x模式
-		{"2x-2x", false}, // 带连字符的2x2x模式
+		{"", false},       // 默认模式
+		{"1x1x", false},   // 显式1x1x模式
+		{"1x-1x", false},  // 带连字符的1x1x模式
+		{"1x2x", false},   // 1x到2x模式
+		{"1x-2x", false},  // 带连字符的1x2x模式
+		{"2x2x", false},   // 2x到2x模式
+		{"2x-2x", false},  // 带连字符的2x2x模式
 		{"invalid", true}, // 无效模式
-		{"3x3x", true},   // 不支持的模式
+		{"3x3x", true},    // 不支持的模式
 	}
 
 	for _, tc := range testCases {
@@ -71,7 +71,7 @@ log:
 			// 注意：由于Run函数实际会执行同步操作，而我们没有真实的InfluxDB实例
 			// 这里主要测试配置加载和模式验证部分
 			// 在实际测试中，我们可能需要使用mock或者跳过实际的连接测试
-			
+
 			// 由于Run函数会尝试连接真实的数据库，这里我们主要测试函数调用不会panic
 			// 实际的错误（如连接失败）是预期的
 			defer func() {
@@ -79,18 +79,18 @@ log:
 					t.Errorf("Run函数发生panic: %v", r)
 				}
 			}()
-			
+
 			// 这个测试主要验证函数调用结构是否正确
 			// 实际的连接测试需要真实的InfluxDB实例或mock
 			err := Run(configPath, tc.mode)
-			
+
 			// 对于无效模式，应该返回错误
 			if tc.mode == "invalid" || tc.mode == "3x3x" {
 				if err == nil {
 					t.Errorf("模式 %s 应该返回错误", tc.mode)
 				}
 			}
-			
+
 			// 对于有效模式，可能因为连接失败而返回错误，这是正常的
 			// 我们主要确保不会因为模式错误而失败
 		})
@@ -109,7 +109,7 @@ func TestRunWithInvalidConfig(t *testing.T) {
 	// 测试无效的配置文件
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "invalid_config.yaml")
-	
+
 	invalidContent := `
 invalid yaml content:
   this is not proper yaml
@@ -131,7 +131,7 @@ func TestConfigurationConversion(t *testing.T) {
 	// 测试配置转换逻辑
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "conversion_test.yaml")
-	
+
 	configContent := `
 source:
   type: 1
@@ -172,7 +172,7 @@ log:
 	// 这个测试主要验证配置文件能够正确加载
 	// 实际的同步操作会因为没有真实数据库而失败，这是预期的
 	err = Run(configPath, "1x1x")
-	
+
 	// 我们期望会有连接错误，但不应该有配置解析错误
 	if err != nil {
 		// 检查错误是否是连接相关的，而不是配置解析错误
@@ -185,7 +185,7 @@ func TestEmptyModeDefaultsTo1x1x(t *testing.T) {
 	// 测试空模式默认为1x1x
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "default_mode_test.yaml")
-	
+
 	configContent := `
 source:
   type: 1
@@ -215,7 +215,7 @@ log:
 
 	// 测试空模式（应该默认为1x1x）
 	err = Run(configPath, "")
-	
+
 	// 期望连接错误，但不应该是模式错误
 	if err != nil {
 		t.Logf("预期的错误（可能是连接失败）: %v", err)

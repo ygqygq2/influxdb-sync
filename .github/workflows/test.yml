@@ -35,17 +35,12 @@ jobs:
             ${{ runner.os }}-go-${{ env.GO_VERSION }}-
             ${{ runner.os }}-go-
 
-      - name: Download Go dependencies
-        run: go mod download
+      - name: Install Task
+        run: |
+          sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
 
-      - name: Run Go vet
-        run: go vet ./...
-
-      - name: Run Go tests (unit tests)
-        run: go test -v ./...
-
-      - name: Build project
-        run: go build -v -o influxdb-sync ./...
+      - name: Run CI quality checks
+        run: task ci-quality
 
       - name: Upload binary artifact
         uses: actions/upload-artifact@v4
@@ -53,6 +48,15 @@ jobs:
           name: influxdb-sync-binary
           path: influxdb-sync
           retention-days: 1
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage.out
+            coverage.html
+          retention-days: 30
 
   # 集成测试：并行运行所有同步模式测试
   integration-test:
@@ -90,13 +94,13 @@ jobs:
           sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
 
       - name: Download Go dependencies
-        run: go mod download
+        run: task deps
 
       - name: Clean module cache on conflict
         if: failure()
         run: |
           go clean -modcache
-          go mod download
+          task deps
 
       - name: Free up disk space
         run: |
@@ -104,9 +108,11 @@ jobs:
           df -h
 
       - name: Test ${{ matrix.sync-mode }} sync
+        env:
+          SYNC_MODE: ${{ matrix.sync-mode }}
         run: |
           echo "🚀 开始测试 ${{ matrix.sync-mode }} 同步模式"
-          task test-${{ matrix.sync-mode }}
+          task ci-integration
           echo "✅ ${{ matrix.sync-mode }} 测试完成"
 
       - name: Cleanup Docker containers

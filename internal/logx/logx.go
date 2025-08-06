@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	logger = log.New(os.Stdout, "[influxdb-sync] ", log.LstdFlags|log.Lshortfile)
+	logger       = log.New(os.Stdout, "[influxdb-sync] ", log.LstdFlags|log.Lshortfile)
 	currentLevel = "info" // 默认级别
 )
 
@@ -25,14 +25,14 @@ func shouldLog(level string) bool {
 		"warn":  2,
 		"error": 3,
 	}
-	
+
 	currentLevelInt, ok1 := levels[currentLevel]
 	targetLevelInt, ok2 := levels[level]
-	
+
 	if !ok1 || !ok2 {
 		return true // 如果级别不存在，默认输出
 	}
-	
+
 	return targetLevelInt >= currentLevelInt
 }
 

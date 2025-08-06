@@ -8,6 +8,12 @@ on:
 env:
   GO_VERSION: "1.24.3"
 
+permissions:
+  contents: write
+  id-token: write
+  packages: write
+  attestations: write
+
 jobs:
   release:
     name: GoReleaser
@@ -31,18 +37,28 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ env.GO_VERSION }}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-
+            ${{ runner.os }}-go-${{ env.GO_VERSION }}-
 
-      - name: Download dependencies
-        run: go mod download
-
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v5
+      - name: Set up Task
+        uses: arduino/setup-task@v2
         with:
-          distribution: goreleaser
-          version: latest
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies
+        run: task deps
+
+      - name: Create release
+        run: |
+          # 使用awk命令提取最新的版本记录
+          cat CHANGELOG.md | awk '/^# \[/ {if (flag) exit; flag=1} flag {print}' > body.md
+
+      - name: Publish release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "dist/*.zip,dist/checksums.txt"
+          bodyFile: "body.md"
+          allowUpdates: true
+          updateOnlyUnreleased: true

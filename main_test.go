@@ -17,7 +17,7 @@ func TestMainFunction(t *testing.T) {
 
 	// 测试无参数情况（应该退出）
 	os.Args = []string{"influxdb-sync"}
-	
+
 	// 由于main函数会调用os.Exit，我们无法直接测试它
 	// 这里主要测试不会panic
 	defer func() {
@@ -31,7 +31,7 @@ func TestRunSync1x1xFunction(t *testing.T) {
 	// 创建测试配置
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "test_1x1x.yaml")
-	
+
 	configContent := `
 source:
   type: 1
@@ -82,7 +82,7 @@ log:
 	if err == nil {
 		t.Error("期望连接错误，但没有错误")
 	}
-	
+
 	t.Logf("预期的连接错误: %v", err)
 }
 
@@ -90,7 +90,7 @@ func TestRunSync1x2xFunction(t *testing.T) {
 	// 创建测试配置
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "test_1x2x.yaml")
-	
+
 	configContent := `
 source:
   type: 1
@@ -137,7 +137,7 @@ log:
 	if err == nil {
 		t.Error("期望连接错误，但没有错误")
 	}
-	
+
 	t.Logf("预期的连接错误: %v", err)
 }
 
@@ -145,7 +145,7 @@ func TestRunSync2x2xFunction(t *testing.T) {
 	// 创建测试配置
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "test_2x2x.yaml")
-	
+
 	configContent := `
 source:
   type: 2
@@ -192,7 +192,7 @@ log:
 	if err == nil {
 		t.Error("期望连接错误，但没有错误")
 	}
-	
+
 	t.Logf("预期的连接错误: %v", err)
 }
 
@@ -200,7 +200,7 @@ func TestMainLogLevelSetup(t *testing.T) {
 	// 测试日志级别设置逻辑
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "log_level_test.yaml")
-	
+
 	testCases := []struct {
 		name     string
 		logLevel string

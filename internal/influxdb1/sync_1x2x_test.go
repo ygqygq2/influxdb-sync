@@ -25,12 +25,12 @@ func TestSync1x2x(t *testing.T) {
 
 	ctx := context.Background()
 	err := Sync1x2x(ctx, cfg)
-	
+
 	// 期望连接错误，因为没有真实的InfluxDB实例
 	if err == nil {
 		t.Error("期望连接错误，但没有错误")
 	}
-	
+
 	// 验证错误是连接相关的，而不是参数错误
 	t.Logf("预期的连接错误: %v", err)
 }
@@ -72,12 +72,12 @@ func TestSync1x2xConfigValidation(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.Background()
 			err := Sync1x2x(ctx, tc.config)
-			
+
 			// 所有测试都应该返回连接错误，因为没有真实的数据库
 			if err == nil {
 				t.Error("期望连接错误，但没有错误")
 			}
-			
+
 			t.Logf("配置 %s 的预期错误: %v", tc.name, err)
 		})
 	}

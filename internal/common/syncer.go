@@ -221,7 +221,7 @@ func (s *Syncer) syncMeasurement(ctx context.Context, db, measurement string, st
 	}
 
 	var lastTime int64 = startTimeNano
-	
+
 	// 确定目标数据库/bucket名称
 	var targetName string
 	if s.cfg.TargetBucket != "" {

@@ -195,13 +195,13 @@ func (a *Adapter) QueryData(bucket, measurement string, startTime int64, batchSi
 // 数据目标接口实现
 func (a *Adapter) WritePoints(bucket string, points []common.DataPoint) error {
 	writeAPI := a.client.WriteAPIBlocking(a.Org, bucket)
-	
+
 	for _, point := range points {
 		p := influxdb2.NewPoint(point.Measurement, point.Tags, point.Fields, point.Time)
 		if err := writeAPI.WritePoint(context.Background(), p); err != nil {
 			return err
 		}
 	}
-	
+
 	return nil
 }

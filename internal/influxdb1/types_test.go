@@ -83,12 +83,12 @@ func TestSync1x1x(t *testing.T) {
 
 	ctx := context.Background()
 	err := Sync1x1x(ctx, cfg)
-	
+
 	// 期望连接错误，因为没有真实的InfluxDB实例
 	if err == nil {
 		t.Error("期望连接错误，但没有错误")
 	}
-	
+
 	// 验证错误是连接相关的，而不是参数错误
 	t.Logf("预期的连接错误: %v", err)
 }
@@ -109,12 +109,12 @@ func TestSyncBackwardCompatibility(t *testing.T) {
 
 	ctx := context.Background()
 	err := Sync(ctx, cfg)
-	
+
 	// 期望连接错误，因为没有真实的InfluxDB实例
 	if err == nil {
 		t.Error("期望连接错误，但没有错误")
 	}
-	
+
 	// 验证错误是连接相关的，而不是参数错误
 	t.Logf("预期的连接错误: %v", err)
 }
