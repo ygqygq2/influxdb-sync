@@ -39,6 +39,15 @@ jobs:
         run: |
           sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
 
+      - name: Check Docker environment
+        run: |
+          echo "=== Docker version ==="
+          docker --version
+          echo "=== Docker Compose version ==="
+          docker compose version || echo "docker compose not available"
+          echo "=== docker-compose version ==="
+          docker-compose --version || echo "docker-compose not available"
+
       - name: Set up GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
@@ -98,6 +107,15 @@ jobs:
         run: |
           sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
 
+      - name: Check Docker environment
+        run: |
+          echo "=== Docker version ==="
+          docker --version
+          echo "=== Docker Compose version ==="
+          docker compose version || echo "docker compose not available"
+          echo "=== docker-compose version ==="
+          docker-compose --version || echo "docker-compose not available"
+
       - name: Download Go dependencies
         run: task deps
 
@@ -124,7 +142,14 @@ jobs:
         if: always()
         run: |
           docker ps -a
-          docker-compose -f deployments/docker-compose-${{ matrix.sync_mode }}.yml down --volumes --remove-orphans || true
+          # 使用智能检测的 Docker Compose 命令
+          DOCKER_COMPOSE_CMD="docker-compose"
+          if ! command -v docker-compose >/dev/null 2>&1; then
+            if docker compose version >/dev/null 2>&1; then
+              DOCKER_COMPOSE_CMD="docker compose"
+            fi
+          fi
+          $DOCKER_COMPOSE_CMD -f deployments/docker-compose-${{ matrix.sync_mode }}.yml down --volumes --remove-orphans || true
           docker system prune -f
 
       - name: Upload test artifacts on failure

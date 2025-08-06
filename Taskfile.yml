@@ -7,6 +7,23 @@ vars:
   COVERAGE_THRESHOLD: 50
 
 tasks:
+  # === 通用工具 ===
+  setup-docker-compose:
+    desc: 设置 Docker Compose 命令别名
+    internal: true
+    cmds:
+      - |
+        if command -v docker-compose >/dev/null 2>&1; then
+          echo "✅ 使用已安装的 docker-compose 命令"
+          export DOCKER_COMPOSE_CMD="docker-compose"
+        elif docker compose version >/dev/null 2>&1; then
+          echo "✅ 使用 Docker Compose v2 (docker compose)"
+          export DOCKER_COMPOSE_CMD="docker compose"
+        else
+          echo "❌ 未找到 Docker Compose，请安装 Docker Compose"
+          exit 1
+        fi
+
   # === 依赖管理 ===
   deps:
     desc: 下载依赖
@@ -154,10 +171,17 @@ tasks:
     desc: 清理所有产物 (包括 Docker)
     deps: [clean]
     cmds:
-      - docker-compose -f deployments/docker-compose-1x-1x.yml down --volumes --remove-orphans || true
-      - docker-compose -f deployments/docker-compose-1x-2x.yml down --volumes --remove-orphans || true
-      - docker-compose -f deployments/docker-compose-2x-2x.yml down --volumes --remove-orphans || true
-      - docker system prune -f || true
+      - |
+        DOCKER_COMPOSE_CMD="docker-compose"
+        if ! command -v docker-compose >/dev/null 2>&1; then
+          if docker compose version >/dev/null 2>&1; then
+            DOCKER_COMPOSE_CMD="docker compose"
+          fi
+        fi
+        $DOCKER_COMPOSE_CMD -f deployments/docker-compose-1x-1x.yml down --volumes --remove-orphans || true
+        $DOCKER_COMPOSE_CMD -f deployments/docker-compose-1x-2x.yml down --volumes --remove-orphans || true
+        $DOCKER_COMPOSE_CMD -f deployments/docker-compose-2x-2x.yml down --volumes --remove-orphans || true
+        docker system prune -f || true
 
   # === 发布相关 ===
   release:
@@ -181,7 +205,14 @@ tasks:
   test-1x-1x:
     desc: 一键测试 1.x->1.x 同步
     cmds:
-      - docker-compose -f deployments/docker-compose-1x-1x.yml up -d
+      - |
+        DOCKER_COMPOSE_CMD="docker-compose"
+        if ! command -v docker-compose >/dev/null 2>&1; then
+          if docker compose version >/dev/null 2>&1; then
+            DOCKER_COMPOSE_CMD="docker compose"
+          fi
+        fi
+        $DOCKER_COMPOSE_CMD -f deployments/docker-compose-1x-1x.yml up -d
       - sleep 5
       - bash scripts/write_data_1x.sh
       - sleep 2
@@ -193,13 +224,26 @@ tasks:
           echo "数据校验失败，请人工排查！"
           exit 1
         else
-          docker-compose -f deployments/docker-compose-1x-1x.yml down
+          DOCKER_COMPOSE_CMD="docker-compose"
+          if ! command -v docker-compose >/dev/null 2>&1; then
+            if docker compose version >/dev/null 2>&1; then
+              DOCKER_COMPOSE_CMD="docker compose"
+            fi
+          fi
+          $DOCKER_COMPOSE_CMD -f deployments/docker-compose-1x-1x.yml down
         fi
 
   test-1x-2x:
     desc: 一键测试 1.x->2.x 同步
     cmds:
-      - docker-compose -f deployments/docker-compose-1x-2x.yml up -d
+      - |
+        DOCKER_COMPOSE_CMD="docker-compose"
+        if ! command -v docker-compose >/dev/null 2>&1; then
+          if docker compose version >/dev/null 2>&1; then
+            DOCKER_COMPOSE_CMD="docker compose"
+          fi
+        fi
+        $DOCKER_COMPOSE_CMD -f deployments/docker-compose-1x-2x.yml up -d
       - sleep 8
       - bash scripts/write_data_1x.sh
       - sleep 2
@@ -212,13 +256,26 @@ tasks:
           echo "数据校验失败，请人工排查！"
           exit 1
         else
-          docker-compose -f deployments/docker-compose-1x-2x.yml down
+          DOCKER_COMPOSE_CMD="docker-compose"
+          if ! command -v docker-compose >/dev/null 2>&1; then
+            if docker compose version >/dev/null 2>&1; then
+              DOCKER_COMPOSE_CMD="docker compose"
+            fi
+          fi
+          $DOCKER_COMPOSE_CMD -f deployments/docker-compose-1x-2x.yml down
         fi
 
   test-2x-2x:
     desc: 一键测试 2.x->2.x 同步
     cmds:
-      - docker-compose -f deployments/docker-compose-2x-2x.yml up -d
+      - |
+        DOCKER_COMPOSE_CMD="docker-compose"
+        if ! command -v docker-compose >/dev/null 2>&1; then
+          if docker compose version >/dev/null 2>&1; then
+            DOCKER_COMPOSE_CMD="docker compose"
+          fi
+        fi
+        $DOCKER_COMPOSE_CMD -f deployments/docker-compose-2x-2x.yml up -d
       - sleep 8
       - bash scripts/write_data_2x.sh
       - sleep 2
@@ -230,7 +287,13 @@ tasks:
           echo "数据校验失败，请人工排查！"
           exit 1
         else
-          docker-compose -f deployments/docker-compose-2x-2x.yml down
+          DOCKER_COMPOSE_CMD="docker-compose"
+          if ! command -v docker-compose >/dev/null 2>&1; then
+            if docker compose version >/dev/null 2>&1; then
+              DOCKER_COMPOSE_CMD="docker compose"
+            fi
+          fi
+          $DOCKER_COMPOSE_CMD -f deployments/docker-compose-2x-2x.yml down
         fi
 
   # === Git Hooks 管理 ===
