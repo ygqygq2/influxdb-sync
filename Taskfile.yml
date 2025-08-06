@@ -232,3 +232,49 @@ tasks:
         else
           docker-compose -f deployments/docker-compose-2x-2x.yml down
         fi
+
+  # === Git Hooks 管理 ===
+  install-hooks:
+    desc: 安装 Git hooks (pre-commit)
+    cmds:
+      - |
+        echo "🔧 安装 Git pre-commit hook..."
+        if [ -f .git/hooks/pre-commit ]; then
+          echo "✅ pre-commit hook 已存在"
+        else
+          echo "❌ pre-commit hook 不存在，请检查文件"
+          exit 1
+        fi
+        chmod +x .git/hooks/pre-commit
+        echo "✅ Git hooks 安装完成"
+        echo "📝 现在每次 git commit 前会自动："
+        echo "   - 格式化 Go 代码 (task fmt)"
+        echo "   - 检查代码格式 (task fmt-check)"  
+        echo "   - 运行静态分析 (task vet)"
+        echo "   - 检查依赖状态 (task deps-check)"
+
+  uninstall-hooks:
+    desc: 卸载 Git hooks
+    cmds:
+      - |
+        echo "🗑️  卸载 Git hooks..."
+        if [ -f .git/hooks/pre-commit ]; then
+          rm .git/hooks/pre-commit
+          echo "✅ pre-commit hook 已删除"
+        else
+          echo "ℹ️  pre-commit hook 不存在"
+        fi
+
+  test-hooks:
+    desc: 测试 Git hooks 功能
+    cmds:
+      - |
+        echo "🧪 测试 pre-commit hook..."
+        if [ -x .git/hooks/pre-commit ]; then
+          echo "✅ pre-commit hook 存在且可执行"
+          echo "📋 hook 内容预览:"
+          head -10 .git/hooks/pre-commit
+        else
+          echo "❌ pre-commit hook 不存在或不可执行"
+          echo "请运行: task install-hooks"
+        fi

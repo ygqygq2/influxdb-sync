@@ -48,14 +48,14 @@ func TestInfluxDB1xSpecificFunctionality(t *testing.T) {
 	t.Run("数据源和目标配置", func(t *testing.T) {
 		sourceConfig := DataSourceConfig{
 			Addr: "http://localhost:8086",
-			User: "admin", 
+			User: "admin",
 			Pass: "password",
 		}
 
 		targetConfig := DataTargetConfig{
 			Addr: "http://localhost:8087",
 			User: "admin",
-			Pass: "password", 
+			Pass: "password",
 		}
 
 		source := NewDataSource(sourceConfig)

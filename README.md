@@ -49,38 +49,29 @@ unzip influxdb-sync_Linux_x86_64.zip
 
 # Windows
 # 下载 influxdb-sync_Windows_x86_64.zip 并解压
-```
+````
 
 ### 配置文件
 
-创建 `config.yaml` 配置文件：
+项目提供了多种同步模式的示例配置文件：
 
-```yaml
-# InfluxDB 1.x 到 2.x 同步示例
-source_addr: "http://localhost:8086"
-source_user: "admin"
-source_pass: "password"
-source_db: "mydb"
+- `config.yaml` - InfluxDB 1.x → 1.x 同步
+- `config_1x2x.yaml` - InfluxDB 1.x → 2.x 同步
+- `config_2x2x.yaml` - InfluxDB 2.x → 2.x 同步
 
-target_addr: "http://localhost:8087"
-target_token: "your-influxdb2-token"
-target_org: "your-org"
-target_bucket: "your-bucket"
+根据你的需求复制对应的配置文件并修改相关参数。
 
-batch_size: 1000
-parallel: 4
-log_level: "info"
-```
+**同步模式自动判断**：程序会根据配置文件中的 `source.type` 和 `target.type` 字段自动选择同步模式。
 
 ### 运行同步
 
 ```bash
-# 使用默认配置和模式 (1x1x)
+# 运行同步 (模式由配置文件中的 type 字段自动判断)
 ./influxdb-sync config.yaml
 
-# 指定同步模式
-./influxdb-sync config_1x2x.yaml 1x2x
-./influxdb-sync config_2x2x.yaml 2x2x
+# 不同模式使用对应的配置文件
+./influxdb-sync config_1x2x.yaml  # 1x → 2x 同步
+./influxdb-sync config_2x2x.yaml  # 2x → 2x 同步
 ```
 
 ## 🛠️ 开发和构建
@@ -112,17 +103,31 @@ task test-coverage # 测试覆盖率
 task build         # 构建二进制
 task release       # 发布构建 (多平台)
 task clean         # 清理构建产物
+
+# Git hooks 管理
+task install-hooks # 安装 pre-commit hooks
+task test-hooks    # 测试 hooks 状态
 ```
+
+### Git Hooks 自动化
+
+项目配置了 pre-commit hooks，每次提交时自动：
+
+- 🔧 格式化 Go 代码
+- 🔍 运行静态分析
+- 📦 检查依赖状态
+
+无需手动记住运行 `task fmt`！详见 [Git Hooks 说明](docs/GIT_HOOKS.md)。
 
 ## 📋 配置参考
 
 支持的同步模式和对应的配置参数：
 
-| 同步模式 | 说明               | 主要配置项                                   |
-| -------- | ------------------ | -------------------------------------------- |
-| `1x1x`   | InfluxDB 1.x → 1.x | `source_addr`, `target_addr`, 用户名密码认证 |
-| `1x2x`   | InfluxDB 1.x → 2.x | 源端用户名密码，目标端 Token 认证            |
-| `2x2x`   | InfluxDB 2.x → 2.x | `source_token`, `target_token`, 组织和桶配置 |
+| 同步模式 | 说明               | 主要配置项                                                       |
+| -------- | ------------------ | ---------------------------------------------------------------- |
+| `1x1x`   | InfluxDB 1.x → 1.x | `source.type: 1`, `target.type: 1`, 用户名密码认证               |
+| `1x2x`   | InfluxDB 1.x → 2.x | `source.type: 1`, `target.type: 2`, 源端用户名密码，目标端 Token |
+| `2x2x`   | InfluxDB 2.x → 2.x | `source.type: 2`, `target.type: 2`, Token 认证，组织和桶配置     |
 
 详细配置说明请参考项目中的示例配置文件。
 
