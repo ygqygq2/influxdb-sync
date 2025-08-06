@@ -71,7 +71,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sync-mode: ["1x-1x", "1x-2x", "2x-2x"]
+        sync_mode: ["1x-1x", "1x-2x", "2x-2x"]
 
     steps:
       - name: Checkout code
@@ -88,9 +88,9 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ env.GO_VERSION }}-${{ matrix.sync-mode }}-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ env.GO_VERSION }}-${{ matrix.sync_mode }}-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-${{ env.GO_VERSION }}-${{ matrix.sync-mode }}-
+            ${{ runner.os }}-go-${{ env.GO_VERSION }}-${{ matrix.sync_mode }}-
             ${{ runner.os }}-go-${{ env.GO_VERSION }}-
             ${{ runner.os }}-go-
 
@@ -112,26 +112,26 @@ jobs:
           docker system prune -f
           df -h
 
-      - name: Test ${{ matrix.sync-mode }} sync
+      - name: Test ${{ matrix.sync_mode }} sync
         env:
-          SYNC_MODE: ${{ matrix.sync-mode }}
+          SYNC_MODE: ${{ matrix.sync_mode }}
         run: |
-          echo "🚀 开始测试 ${{ matrix.sync-mode }} 同步模式"
+          echo "🚀 开始测试 ${{ matrix.sync_mode }} 同步模式"
           task ci-integration
-          echo "✅ ${{ matrix.sync-mode }} 测试完成"
+          echo "✅ ${{ matrix.sync_mode }} 测试完成"
 
       - name: Cleanup Docker containers
         if: always()
         run: |
           docker ps -a
-          docker-compose -f deployments/docker-compose-${{ matrix.sync-mode }}.yml down --volumes --remove-orphans || true
+          docker-compose -f deployments/docker-compose-${{ matrix.sync_mode }}.yml down --volumes --remove-orphans || true
           docker system prune -f
 
       - name: Upload test artifacts on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-logs-${{ matrix.sync-mode }}
+          name: test-logs-${{ matrix.sync_mode }}
           path: |
             *.log
             resume.state
