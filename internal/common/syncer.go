@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ygqygq2/influxdb-sync/internal/logx"
+	"github.com/ygqygq2/influxdb-sync/internal/utils"
 )
 
 // 通用同步器
@@ -112,7 +113,7 @@ func (s *Syncer) getDatabases() ([]string, error) {
 		if db == "_internal" {
 			continue
 		}
-		if containsString(s.cfg.SourceDBExclude, db) {
+		if utils.ContainsString(s.cfg.SourceDBExclude, db) {
 			continue
 		}
 		filteredDBs = append(filteredDBs, db)
@@ -293,14 +294,4 @@ func (s *Syncer) syncMeasurement(ctx context.Context, db, measurement string, st
 	}
 
 	return nil
-}
-
-// 工具函数：检查字符串数组是否包含指定字符串
-func containsString(slice []string, str string) bool {
-	for _, s := range slice {
-		if s == str {
-			return true
-		}
-	}
-	return false
 }

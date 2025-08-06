@@ -47,10 +47,20 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          install-only: true
+
       - name: Install dependencies
         run: task deps
 
-      - name: Create release
+      - name: Build and package release
+        run: task release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create release body
         run: |
           # 使用awk命令提取最新的版本记录
           cat CHANGELOG.md | awk '/^# \[/ {if (flag) exit; flag=1} flag {print}' > body.md

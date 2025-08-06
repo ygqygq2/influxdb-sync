@@ -285,28 +285,6 @@ func TestSyncerGetDatabases(t *testing.T) {
 	}
 }
 
-func TestContainsString(t *testing.T) {
-	testCases := []struct {
-		slice    []string
-		str      string
-		expected bool
-	}{
-		{[]string{"a", "b", "c"}, "b", true},
-		{[]string{"a", "b", "c"}, "d", false},
-		{[]string{}, "a", false},
-		{[]string{"test"}, "test", true},
-		{[]string{"test"}, "Test", false}, // 区分大小写
-	}
-
-	for _, tc := range testCases {
-		result := containsString(tc.slice, tc.str)
-		if result != tc.expected {
-			t.Errorf("containsString(%v, %s) = %v, 期望 %v",
-				tc.slice, tc.str, result, tc.expected)
-		}
-	}
-}
-
 func TestSyncWithMockData(t *testing.T) {
 	// 测试成功的同步流程
 	cfg := SyncConfig{
