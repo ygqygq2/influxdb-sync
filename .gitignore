@@ -2,3 +2,5 @@ resume.state
 ./influxdb-sync
 
 dist/
+
+coverage.*
