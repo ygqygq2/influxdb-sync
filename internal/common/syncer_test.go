@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 )
@@ -69,6 +70,7 @@ type mockDataTarget struct {
 	connected   bool
 	shouldError bool
 	writtenData []DataPoint
+	mu          sync.Mutex
 }
 
 func (m *mockDataTarget) Connect() error {
@@ -88,8 +90,16 @@ func (m *mockDataTarget) WritePoints(db string, points []DataPoint) error {
 	if m.shouldError {
 		return &mockError{"写入失败"}
 	}
+	m.mu.Lock()
 	m.writtenData = append(m.writtenData, points...)
+	m.mu.Unlock()
 	return nil
+}
+
+func (m *mockDataTarget) GetWrittenDataCount() int {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return len(m.writtenData)
 }
 
 // Mock错误类型
@@ -330,7 +340,7 @@ func TestSyncWithMockData(t *testing.T) {
 		t.Error("目标数据库应该已断开连接")
 	}
 	
-	if len(target.writtenData) == 0 {
+	if target.GetWrittenDataCount() == 0 {
 		t.Error("目标数据库应该有写入数据")
 	}
 }
