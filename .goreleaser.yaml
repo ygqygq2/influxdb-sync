@@ -72,9 +72,7 @@ checksum:
 snapshot:
   version_template: "{{ incpatch .Version }}-next"
 release:
+  disable: true
   draft: true
-  mode: append
-  extra_files:
-    - glob: dist/**/*.zip
-    - glob: dist/checksums.txt
+  mode: replace
   name_template: "Release {{.Tag}}"
