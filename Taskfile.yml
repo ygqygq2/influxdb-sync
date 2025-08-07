@@ -37,10 +37,11 @@ tasks:
 
   deps-check:
     desc: 检查依赖是否需要更新
+    silent: true
     cmds:
       - go mod tidy
       - |
-        if ! git diff --exit-code go.mod go.sum; then
+        if ! git diff --exit-code go.mod go.sum >/dev/null 2>&1; then
           echo "❌ go.mod 或 go.sum 文件需要更新"
           echo "请运行: task tidy"
           exit 1
@@ -61,6 +62,7 @@ tasks:
 
   fmt-check:
     desc: 检查代码格式
+    silent: true
     cmds:
       - |
         unformatted=$(gofmt -l .)
