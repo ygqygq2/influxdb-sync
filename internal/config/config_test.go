@@ -146,3 +146,75 @@ target:
 		t.Error("期望返回YAML解析错误，但没有错误")
 	}
 }
+
+func TestDBConfig_ToV1CompatConfig(t *testing.T) {
+	dbConfig := DBConfig{
+		Type:     3,
+		URL:      "http://localhost:8086",
+		User:     "admin",
+		Pass:     "password",
+		Database: "testdb",
+	}
+
+	v1Config := dbConfig.ToV1CompatConfig()
+	if v1Config.Addr != dbConfig.URL {
+		t.Errorf("Addr = %v, want %v", v1Config.Addr, dbConfig.URL)
+	}
+	if v1Config.User != dbConfig.User {
+		t.Errorf("User = %v, want %v", v1Config.User, dbConfig.User)
+	}
+	if v1Config.Pass != dbConfig.Pass {
+		t.Errorf("Pass = %v, want %v", v1Config.Pass, dbConfig.Pass)
+	}
+	if v1Config.Database != dbConfig.Database {
+		t.Errorf("Database = %v, want %v", v1Config.Database, dbConfig.Database)
+	}
+}
+
+func TestDBConfig_ToV2CompatConfig(t *testing.T) {
+	dbConfig := DBConfig{
+		Type:     3,
+		URL:      "http://localhost:8086",
+		Token:    "test-token",
+		Org:      "test-org",
+		Database: "testdb",
+	}
+
+	v2Config := dbConfig.ToV2CompatConfig()
+	if v2Config.URL != dbConfig.URL {
+		t.Errorf("URL = %v, want %v", v2Config.URL, dbConfig.URL)
+	}
+	if v2Config.Token != dbConfig.Token {
+		t.Errorf("Token = %v, want %v", v2Config.Token, dbConfig.Token)
+	}
+	if v2Config.Org != dbConfig.Org {
+		t.Errorf("Org = %v, want %v", v2Config.Org, dbConfig.Org)
+	}
+	if v2Config.Database != dbConfig.Database {
+		t.Errorf("Database = %v, want %v", v2Config.Database, dbConfig.Database)
+	}
+}
+
+func TestDBConfig_ToNativeConfig(t *testing.T) {
+	dbConfig := DBConfig{
+		Type:      3,
+		URL:       "http://localhost:8086",
+		Token:     "test-token",
+		Database:  "testdb",
+		Namespace: "test-ns",
+	}
+
+	nativeConfig := dbConfig.ToNativeConfig()
+	if nativeConfig.URL != dbConfig.URL {
+		t.Errorf("URL = %v, want %v", nativeConfig.URL, dbConfig.URL)
+	}
+	if nativeConfig.Token != dbConfig.Token {
+		t.Errorf("Token = %v, want %v", nativeConfig.Token, dbConfig.Token)
+	}
+	if nativeConfig.Database != dbConfig.Database {
+		t.Errorf("Database = %v, want %v", nativeConfig.Database, dbConfig.Database)
+	}
+	if nativeConfig.Namespace != dbConfig.Namespace {
+		t.Errorf("Namespace = %v, want %v", nativeConfig.Namespace, dbConfig.Namespace)
+	}
+}

@@ -149,3 +149,76 @@ func TestDataSourceAndTargetSeparation(t *testing.T) {
 		t.Error("源和目标密码不应该相同")
 	}
 }
+
+func TestDataSource_GetTagKeys(t *testing.T) {
+	// 需要实际的数据库实例，跳过
+	t.Skip("需要实际的 InfluxDB 1.x 实例")
+	
+	config := DataSourceConfig{
+		Addr: "http://localhost:8086",
+		User: "admin",
+		Pass: "password",
+	}
+	
+	ds := NewDataSource(config)
+	err := ds.Connect()
+	if err != nil {
+		t.Skip("无法连接到数据库")
+	}
+	defer ds.Close()
+	
+	tagKeys, err := ds.GetTagKeys("testdb", "cpu")
+	if err != nil {
+		t.Logf("GetTagKeys 错误: %v", err)
+	}
+	
+	if len(tagKeys) > 0 {
+		t.Logf("找到 %d 个标签", len(tagKeys))
+	}
+}
+
+func TestDataSource_QueryData(t *testing.T) {
+	// 需要实际的数据库实例，跳过
+	t.Skip("需要实际的 InfluxDB 1.x 实例")
+	
+	config := DataSourceConfig{
+		Addr: "http://localhost:8086",
+		User: "admin",
+		Pass: "password",
+	}
+	
+	ds := NewDataSource(config)
+	err := ds.Connect()
+	if err != nil {
+		t.Skip("无法连接到数据库")
+	}
+	defer ds.Close()
+	
+	points, maxTime, err := ds.QueryData("testdb", "cpu", 0, 1000)
+	if err != nil {
+		t.Logf("QueryData 错误: %v", err)
+	}
+	
+	t.Logf("查询到 %d 个数据点，最大时间戳 %d", len(points), maxTime)
+}
+
+func TestDataTarget_WritePoints(t *testing.T) {
+	// 需要实际的数据库实例，跳过
+	t.Skip("需要实际的 InfluxDB 1.x 实例")
+	
+	config := DataTargetConfig{
+		Addr: "http://localhost:8086",
+		User: "admin",
+		Pass: "password",
+	}
+	
+	dt := NewDataTarget(config)
+	err := dt.Connect()
+	if err != nil {
+		t.Skip("无法连接到数据库")
+	}
+	defer dt.Close()
+	
+	// 模拟写入数据点
+	// 实际测试需要有效的数据点
+}

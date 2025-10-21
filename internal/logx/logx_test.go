@@ -183,3 +183,44 @@ func TestSprint(t *testing.T) {
 		t.Errorf("期望 %s, 实际 %s", expected, result)
 	}
 }
+
+// 测试多参数日志函数
+func TestMultipleArgumentLogFunctions(t *testing.T) {
+	originalLogger := logger
+	originalLevel := currentLevel
+	defer func() {
+		logger = originalLogger
+		currentLevel = originalLevel
+	}()
+
+	var buf bytes.Buffer
+	logger = log.New(&buf, "", 0)
+	SetLevel("debug")
+
+	// 测试多参数Debug
+	Debug("multiple", " ", "args", " ", 1, 2, 3)
+	if !strings.Contains(buf.String(), "multiple") && !strings.Contains(buf.String(), "args") {
+		t.Error("多参数Debug消息未正确输出")
+	}
+	buf.Reset()
+
+	// 测试多参数Info
+	Info("info", " with ", "many", " args")
+	if !strings.Contains(buf.String(), "info") && !strings.Contains(buf.String(), "many") {
+		t.Error("多参数Info消息未正确输出")
+	}
+	buf.Reset()
+
+	// 测试多参数Warn
+	Warn("warn:", " value=", 42)
+	if !strings.Contains(buf.String(), "warn:") {
+		t.Error("多参数Warn消息未正确输出")
+	}
+	buf.Reset()
+
+	// 测试多参数Error
+	Error("error:", " code=", 500)
+	if !strings.Contains(buf.String(), "error:") {
+		t.Error("多参数Error消息未正确输出")
+	}
+}

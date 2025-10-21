@@ -165,3 +165,92 @@ func TestAdapterMultipleInstances(t *testing.T) {
 		t.Error("修改adapter1不应该影响adapter2")
 	}
 }
+
+func TestAdapter_Connect(t *testing.T) {
+	// 需要实际的数据库实例，跳过
+	t.Skip("需要实际的 InfluxDB 2.x 实例")
+	
+	adapter := &Adapter{
+		URL:    "http://localhost:8086",
+		Token:  "test-token",
+		Org:    "test-org",
+		Bucket: "test-bucket",
+	}
+	
+	err := adapter.Connect()
+	if err != nil {
+		t.Logf("Connect 错误: %v", err)
+	}
+	defer adapter.Close()
+}
+
+func TestAdapter_GetDatabases(t *testing.T) {
+	// 需要实际的数据库实例，跳过
+	t.Skip("需要实际的 InfluxDB 2.x 实例")
+	
+	adapter := &Adapter{
+		URL:    "http://localhost:8086",
+		Token:  "test-token",
+		Org:    "test-org",
+		Bucket: "test-bucket",
+	}
+	
+	err := adapter.Connect()
+	if err != nil {
+		t.Skip("无法连接到数据库")
+	}
+	defer adapter.Close()
+	
+	buckets, err := adapter.GetDatabases()
+	if err != nil {
+		t.Logf("GetDatabases 错误: %v", err)
+	}
+	
+	t.Logf("找到 %d 个buckets", len(buckets))
+}
+
+func TestAdapter_GetMeasurements(t *testing.T) {
+	// 需要实际的数据库实例，跳过
+	t.Skip("需要实际的 InfluxDB 2.x 实例")
+	
+	adapter := &Adapter{
+		URL:    "http://localhost:8086",
+		Token:  "test-token",
+		Org:    "test-org",
+		Bucket: "test-bucket",
+	}
+	
+	err := adapter.Connect()
+	if err != nil {
+		t.Skip("无法连接到数据库")
+	}
+	defer adapter.Close()
+	
+	measurements, err := adapter.GetMeasurements("test-bucket")
+	if err != nil {
+		t.Logf("GetMeasurements 错误: %v", err)
+	}
+	
+	t.Logf("找到 %d 个measurements", len(measurements))
+}
+
+func TestAdapter_WritePoints(t *testing.T) {
+	// 需要实际的数据库实例，跳过
+	t.Skip("需要实际的 InfluxDB 2.x 实例")
+	
+	adapter := &Adapter{
+		URL:    "http://localhost:8086",
+		Token:  "test-token",
+		Org:    "test-org",
+		Bucket: "test-bucket",
+	}
+	
+	err := adapter.Connect()
+	if err != nil {
+		t.Skip("无法连接到数据库")
+	}
+	defer adapter.Close()
+	
+	// 模拟写入数据点
+	// 实际测试需要有效的数据点
+}
