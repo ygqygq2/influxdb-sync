@@ -1,0 +1,35 @@
+# InfluxDB 3.x 到 3.x 同步配置示例
+# 源数据库 - InfluxDB 3.x (v1 兼容模式)
+source:
+  type: 3 # 3 表示 InfluxDB 3.x
+  url: "http://localhost:8086" # 源 InfluxDB 3.x 服务地址
+  user: "admin" # v1 兼容模式用户名
+  pass: "password" # v1 兼容模式密码
+  database: "source-db" # 源数据库名称
+  compat_mode: "v1" # 兼容模式：v1
+
+# 目标数据库 - InfluxDB 3.x (v2 兼容模式)
+target:
+  type: 3 # 3 表示 InfluxDB 3.x
+  url: "http://localhost:8087" # 目标 InfluxDB 3.x 服务地址
+  token: "your-target-token-here" # v2 兼容 API Token
+  org: "target-org" # 目标组织名称
+  database: "target-db" # 目标数据库名称
+  compat_mode: "v2" # 兼容模式：v2
+  db_prefix: "" # 数据库名前缀
+  db_suffix: "_migrated" # 数据库名后缀
+
+# 同步配置
+sync:
+  start: "" # 开始时间 (RFC3339 格式)，留空表示从最早开始
+  end: "" # 结束时间 (RFC3339 格式)，留空表示到最新
+  batch_size: 5000 # 批量大小
+  resume_file: "resume_3x3x.json" # 断点续传文件
+  parallel: 4 # 并行度
+  retry_count: 3 # 重试次数
+  retry_interval: 5 # 重试间隔（秒）
+  rate_limit: 1000 # 速率限制（点/秒）
+
+# 日志配置
+log:
+  level: "info" # 日志级别：debug, info, warn, error

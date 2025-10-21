@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/ygqygq2/influxdb-sync/cmd"
 	"github.com/ygqygq2/influxdb-sync/internal/config"
 )
 
@@ -71,14 +72,8 @@ log:
 		t.Fatalf("无法创建测试配置文件: %v", err)
 	}
 
-	// 加载配置
-	cfg, err := config.LoadConfig(configPath)
-	if err != nil {
-		t.Fatalf("配置加载失败: %v", err)
-	}
-
-	// 测试runSync1x1x函数
-	err = runSync1x1x(cfg)
+	// 测试 Run 函数
+	err = cmd.Run(configPath)
 	if err == nil {
 		t.Error("期望连接错误，但没有错误")
 	}
@@ -126,14 +121,8 @@ log:
 		t.Fatalf("无法创建测试配置文件: %v", err)
 	}
 
-	// 加载配置
-	cfg, err := config.LoadConfig(configPath)
-	if err != nil {
-		t.Fatalf("配置加载失败: %v", err)
-	}
-
-	// 测试runSync1x2x函数
-	err = runSync1x2x(cfg)
+	// 测试 Run 函数
+	err = cmd.Run(configPath)
 	if err == nil {
 		t.Error("期望连接错误，但没有错误")
 	}
@@ -181,14 +170,8 @@ log:
 		t.Fatalf("无法创建测试配置文件: %v", err)
 	}
 
-	// 加载配置
-	cfg, err := config.LoadConfig(configPath)
-	if err != nil {
-		t.Fatalf("配置加载失败: %v", err)
-	}
-
-	// 测试runSync2x2x函数
-	err = runSync2x2x(cfg)
+	// 测试 Run 函数
+	err = cmd.Run(configPath)
 	if err == nil {
 		t.Error("期望连接错误，但没有错误")
 	}

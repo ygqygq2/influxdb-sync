@@ -1,0 +1,33 @@
+# InfluxDB 3.x 到 3.x 本地测试配置
+# 源数据库 - InfluxDB 3.x (v2 兼容模式)
+source:
+  type: 3 # 3 表示 InfluxDB 3.x
+  url: "http://localhost:18090" # docker-compose 中的 3.x 源端口
+  token: "test3xtoken" # API Token
+  org: "testorg" # 组织名称
+  database: "testbucket" # 源数据库/bucket 名称
+  compat_mode: "v2" # 兼容模式：v2
+
+# 目标数据库 - InfluxDB 3.x (native 模式)
+target:
+  type: 3 # 3 表示 InfluxDB 3.x
+  url: "http://localhost:18091" # docker-compose 中的 3.x 目标端口
+  token: "test3xtoken" # API Token
+  org: "testorg" # 组织名称
+  database: "testbucket_target" # 目标数据库/bucket 名称
+  compat_mode: "native" # 兼容模式：native
+
+# 同步配置
+sync:
+  start: "" # 开始时间，留空表示从最早开始
+  end: "" # 结束时间，留空表示到最新
+  batch_size: 1000 # 批量大小
+  resume_file: "resume_test_3x3x.json" # 断点续传文件
+  parallel: 2 # 并行度
+  retry_count: 3 # 重试次数
+  retry_interval: 5 # 重试间隔（秒）
+  rate_limit: 500 # 速率限制（点/秒）
+
+# 日志配置
+log:
+  level: "debug" # 测试时使用 debug 级别

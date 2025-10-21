@@ -14,6 +14,9 @@
 - **1x → 1x**: InfluxDB 1.x 到 1.x 的数据同步
 - **1x → 2x**: InfluxDB 1.x 到 2.x 的跨版本迁移
 - **2x → 2x**: InfluxDB 2.x 到 2.x 的数据同步
+- **1x → 3x**: InfluxDB 1.x 到 3.x 的跨版本迁移 🆕
+- **2x → 3x**: InfluxDB 2.x 到 3.x 的跨版本迁移 🆕
+- **3x → 3x**: InfluxDB 3.x 到 3.x 的数据同步 🆕
 
 ### 🚀 高性能设计
 
@@ -49,7 +52,7 @@ unzip influxdb-sync_Linux_x86_64.zip
 
 # Windows
 # 下载 influxdb-sync_Windows_x86_64.zip 并解压
-````
+```
 
 ### 配置文件
 
@@ -58,6 +61,9 @@ unzip influxdb-sync_Linux_x86_64.zip
 - `config.yaml` - InfluxDB 1.x → 1.x 同步
 - `config_1x2x.yaml` - InfluxDB 1.x → 2.x 同步
 - `config_2x2x.yaml` - InfluxDB 2.x → 2.x 同步
+- `config_1x3x.yaml` - InfluxDB 1.x → 3.x 同步 🆕
+- `config_2x3x.yaml` - InfluxDB 2.x → 3.x 同步 🆕
+- `config_3x3x.yaml` - InfluxDB 3.x → 3.x 同步 🆕
 
 根据你的需求复制对应的配置文件并修改相关参数。
 
@@ -72,6 +78,14 @@ unzip influxdb-sync_Linux_x86_64.zip
 # 不同模式使用对应的配置文件
 ./influxdb-sync config_1x2x.yaml  # 1x → 2x 同步
 ./influxdb-sync config_2x2x.yaml  # 2x → 2x 同步
+./influxdb-sync config_1x3x.yaml  # 1x → 3x 同步 🆕
+./influxdb-sync config_2x3x.yaml  # 2x → 3x 同步 🆕
+./influxdb-sync config_3x3x.yaml  # 3x → 3x 同步 🆕
+
+# 或者手动指定模式
+./influxdb-sync config.yaml 1x3x  # 手动指定 1x → 3x 模式
+./influxdb-sync config.yaml 2x3x  # 手动指定 2x → 3x 模式
+./influxdb-sync config.yaml 3x3x  # 手动指定 3x → 3x 模式
 ```
 
 ## 🛠️ 开发和构建
@@ -128,6 +142,9 @@ task test-hooks    # 测试 hooks 状态
 | `1x1x`   | InfluxDB 1.x → 1.x | `source.type: 1`, `target.type: 1`, 用户名密码认证               |
 | `1x2x`   | InfluxDB 1.x → 2.x | `source.type: 1`, `target.type: 2`, 源端用户名密码，目标端 Token |
 | `2x2x`   | InfluxDB 2.x → 2.x | `source.type: 2`, `target.type: 2`, Token 认证，组织和桶配置     |
+| `1x3x`   | InfluxDB 1.x → 3.x | `source.type: 1`, `target.type: 3`, v1 兼容源，v2 兼容目标 🆕    |
+| `2x3x`   | InfluxDB 2.x → 3.x | `source.type: 2`, `target.type: 3`, v2 兼容源和目标 🆕           |
+| `3x3x`   | InfluxDB 3.x → 3.x | `source.type: 3`, `target.type: 3`, 多兼容模式组合 🆕            |
 
 详细配置说明请参考项目中的示例配置文件。
 

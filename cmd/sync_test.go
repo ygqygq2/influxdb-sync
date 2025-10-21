@@ -82,14 +82,18 @@ log:
 
 			// 这个测试主要验证函数调用结构是否正确
 			// 实际的连接测试需要真实的InfluxDB实例或mock
-			err := Run(configPath, tc.mode)
+			// 由于Run函数现在只接受配置文件路径，我们修改测试逻辑
+			// 先检查配置加载，然后运行
+			err := Run(configPath)
 
-			// 对于无效模式，应该返回错误
-			if tc.mode == "invalid" || tc.mode == "3x3x" {
-				if err == nil {
-					t.Errorf("模式 %s 应该返回错误", tc.mode)
-				}
+			// 对于之前标记为不支持的3x3x模式，现在应该尝试连接
+			// 主要确保不会因为模式错误而失败
+			if tc.mode == "invalid" {
+				t.Logf("模式 %s 测试已跳过，当前实现会自动检测模式", tc.mode)
 			}
+
+			// 防止未使用错误
+			_ = err
 
 			// 对于有效模式，可能因为连接失败而返回错误，这是正常的
 			// 我们主要确保不会因为模式错误而失败
@@ -99,7 +103,7 @@ log:
 
 func TestRunWithInvalidConfigPath(t *testing.T) {
 	// 测试不存在的配置文件
-	err := Run("non_existent_config.yaml", "")
+	err := Run("non_existent_config.yaml")
 	if err == nil {
 		t.Error("应该因为配置文件不存在而返回错误")
 	}
@@ -121,7 +125,7 @@ invalid yaml content:
 		t.Fatalf("无法创建无效配置文件: %v", err)
 	}
 
-	err = Run(configPath, "")
+	err = Run(configPath)
 	if err == nil {
 		t.Error("应该因为配置文件无效而返回错误")
 	}
@@ -171,7 +175,7 @@ log:
 
 	// 这个测试主要验证配置文件能够正确加载
 	// 实际的同步操作会因为没有真实数据库而失败，这是预期的
-	err = Run(configPath, "1x1x")
+	err = Run(configPath)
 
 	// 我们期望会有连接错误，但不应该有配置解析错误
 	if err != nil {
@@ -214,7 +218,7 @@ log:
 	}
 
 	// 测试空模式（应该默认为1x1x）
-	err = Run(configPath, "")
+	err = Run(configPath)
 
 	// 期望连接错误，但不应该是模式错误
 	if err != nil {

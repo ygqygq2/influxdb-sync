@@ -1,0 +1,41 @@
+services:
+  influxdb2-src:
+    image: influxdb:2.7
+    container_name: influxdb2-src-2x3x
+    ports:
+      - "18087:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin123
+      - DOCKER_INFLUXDB_INIT_ORG=sourceorg
+      - DOCKER_INFLUXDB_INIT_BUCKET=sourcebucket
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=source2xtoken
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # InfluxDB 3.x 目标端 (使用 2.x 模拟 v2 兼容模式)
+  influxdb3-dst:
+    image: influxdb:2.7
+    container_name: influxdb3-dst-2x3x
+    ports:
+      - "18089:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin123
+      - DOCKER_INFLUXDB_INIT_ORG=targetorg
+      - DOCKER_INFLUXDB_INIT_BUCKET=targetbucket
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=target3xtoken
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+networks:
+  default:
+    name: influxdb-sync-test-2x3x

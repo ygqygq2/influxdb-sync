@@ -1,0 +1,50 @@
+services:
+  # InfluxDB 3.x 源端 (使用 1.8 模拟 v1 兼容模式)
+  influxdb3-src-v1:
+    image: influxdb:1.8
+    container_name: influxdb3-src-v1-3x3x
+    ports:
+      - "18090:8086"
+    environment:
+      - INFLUXDB_DB=sourcedb
+      - INFLUXDB_ADMIN_ENABLED=true
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=admin123
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # InfluxDB 3.x 目标端 (使用 2.x 模拟 v2 兼容模式)
+  influxdb3-dst-v2:
+    image: influxdb:2.7
+    container_name: influxdb3-dst-v2-3x3x
+    ports:
+      - "18091:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin123
+      - DOCKER_INFLUXDB_INIT_ORG=targetorg
+      - DOCKER_INFLUXDB_INIT_BUCKET=targetdb
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=target3xv2token
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # 可选：真正的 InfluxDB 3.x (如果有镜像的话)
+  # influxdb3-native:
+  #   image: influxdata/influxdb:3.0-beta
+  #   container_name: influxdb3-native-3x3x
+  #   ports:
+  #     - "18092:8086"
+  #   environment:
+  #     - INFLUXDB_INIT_DATABASE=nativedb
+  #     - INFLUXDB_INIT_TOKEN=native3xtoken
+
+networks:
+  default:
+    name: influxdb-sync-test-3x3x

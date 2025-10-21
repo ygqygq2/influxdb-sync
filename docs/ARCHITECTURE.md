@@ -7,6 +7,9 @@
 - **1x1x**: InfluxDB 1.x 到 1.x
 - **1x2x**: InfluxDB 1.x 到 2.x
 - **2x2x**: InfluxDB 2.x 到 2.x
+- **1x3x**: InfluxDB 1.x 到 3.x 🆕
+- **2x3x**: InfluxDB 2.x 到 3.x 🆕
+- **3x3x**: InfluxDB 3.x 到 3.x 🆕
 
 ## 架构设计
 
@@ -41,6 +44,14 @@ influxdb-sync/
 │   ├── influxdb2/             # InfluxDB 2.x 特定实现
 │   │   ├── adapter.go         # 2.x 数据适配器
 │   │   ├── sync_2x2x.go       # 2.x 到 2.x 同步逻辑
+│   │   └── *_test.go         # 完整测试套件
+│   ├── influxdb3/             # InfluxDB 3.x 特定实现 🆕
+│   │   ├── types.go           # 3.x 配置类型定义
+│   │   ├── client.go          # 3.x 多模式客户端
+│   │   ├── adapter.go         # 3.x 数据适配器
+│   │   ├── sync_1x3x.go       # 1.x 到 3.x 同步逻辑
+│   │   ├── sync_2x3x.go       # 2.x 到 3.x 同步逻辑
+│   │   ├── sync_3x3x.go       # 3.x 到 3.x 同步逻辑
 │   │   └── *_test.go         # 完整测试套件
 │   └── logx/                   # 日志组件
 │       ├── logx.go            # 轻量级日志实现
@@ -100,10 +111,10 @@ main.go → 解析命令行参数 → cmd/sync.go → 模式分发
             ┌─────────────────────────────────────────────┐
             │              模式分发                          │
             └─────────────────────────────────────────────┘
-                    │              │              │
-                  1x1x           1x2x           2x2x
-                    │              │              │
-            influxdb1/sync.go  sync_1x2x.go  influxdb2/sync_2x2x.go
+                    │        │        │        │        │        │
+                  1x1x     1x2x     2x2x     1x3x     2x3x     3x3x
+                    │        │        │        │        │        │
+         influxdb1/sync.go sync_1x2x.go sync_2x2x.go sync_1x3x.go sync_2x3x.go sync_3x3x.go
 ```
 
 #### 2. 同步执行流程
@@ -222,6 +233,39 @@ main.go → 解析命令行参数 → cmd/sync.go → 模式分发
 - **日志级别**: 生产环境使用 Info 级别，调试时使用 Debug 级别
 - **监控告警**: 监控同步进度和错误率
 - **备份策略**: 重要数据同步前的备份确认
+
+## InfluxDB 3.x 支持特性 🆕
+
+### 兼容模式设计
+
+InfluxDB 3.x 支持三种兼容模式，本工具充分利用这些特性：
+
+1. **v1 兼容模式**: 支持 InfluxQL 查询和 Line Protocol 写入
+2. **v2 兼容模式**: 支持 Flux 查询和 v2 API 访问
+3. **原生模式**: 支持 SQL 查询和原生 v3 API
+
+### 多模式适配器
+
+```go
+// influxdb3/client.go - 多模式客户端
+type Client3x struct {
+    v1Client    client.Client      // v1 兼容客户端
+    v2Client    influxdb2.Client   // v2 兼容客户端
+    compatMode  string             // "v1", "v2", "native"
+}
+
+// influxdb3/adapter.go - 智能适配器
+type DataSource3x struct {
+    client *Client3x
+    config interface{} // V1CompatConfig, V2CompatConfig, NativeConfig
+}
+```
+
+### 配置兼容性
+
+- **灵活配置**: 支持混合兼容模式（如 v1 源 → v2 目标）
+- **自动适配**: 根据配置自动选择合适的 API 接口
+- **向前兼容**: 现有 1.x/2.x 配置可直接用于 3.x 目标
 
 ## 总结
 
