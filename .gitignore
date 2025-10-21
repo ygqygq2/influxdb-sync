@@ -1,5 +1,5 @@
 resume.state
-./influxdb-sync
+influxdb-sync
 
 dist/
 
