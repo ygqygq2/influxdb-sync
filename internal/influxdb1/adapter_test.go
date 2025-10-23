@@ -2,6 +2,10 @@ package influxdb1
 
 import (
 	"testing"
+	"time"
+
+	"github.com/ygqygq2/influxdb-sync/internal/common"
+	"github.com/ygqygq2/influxdb-sync/internal/testutil"
 )
 
 func TestEscapeMeasurement(t *testing.T) {
@@ -151,19 +155,18 @@ func TestDataSourceAndTargetSeparation(t *testing.T) {
 }
 
 func TestDataSource_GetTagKeys(t *testing.T) {
-	// 需要实际的数据库实例，跳过
-	t.Skip("需要实际的 InfluxDB 1.x 实例")
+	testutil.SkipIfNoInfluxDB1(t, "http://localhost:18086")
 	
 	config := DataSourceConfig{
-		Addr: "http://localhost:8086",
+		Addr: "http://localhost:18086",
 		User: "admin",
-		Pass: "password",
+		Pass: "admin123",
 	}
 	
 	ds := NewDataSource(config)
 	err := ds.Connect()
 	if err != nil {
-		t.Skip("无法连接到数据库")
+		t.Fatalf("无法连接到数据库: %v", err)
 	}
 	defer ds.Close()
 	
@@ -178,19 +181,18 @@ func TestDataSource_GetTagKeys(t *testing.T) {
 }
 
 func TestDataSource_QueryData(t *testing.T) {
-	// 需要实际的数据库实例，跳过
-	t.Skip("需要实际的 InfluxDB 1.x 实例")
+	testutil.SkipIfNoInfluxDB1(t, "http://localhost:18086")
 	
 	config := DataSourceConfig{
-		Addr: "http://localhost:8086",
+		Addr: "http://localhost:18086",
 		User: "admin",
-		Pass: "password",
+		Pass: "admin123",
 	}
 	
 	ds := NewDataSource(config)
 	err := ds.Connect()
 	if err != nil {
-		t.Skip("无法连接到数据库")
+		t.Fatalf("无法连接到数据库: %v", err)
 	}
 	defer ds.Close()
 	
@@ -203,22 +205,42 @@ func TestDataSource_QueryData(t *testing.T) {
 }
 
 func TestDataTarget_WritePoints(t *testing.T) {
-	// 需要实际的数据库实例，跳过
-	t.Skip("需要实际的 InfluxDB 1.x 实例")
+	testutil.SkipIfNoInfluxDB1(t, "http://localhost:18086")
 	
 	config := DataTargetConfig{
-		Addr: "http://localhost:8086",
+		Addr: "http://localhost:18086",
 		User: "admin",
-		Pass: "password",
+		Pass: "admin123",
 	}
 	
 	dt := NewDataTarget(config)
 	err := dt.Connect()
 	if err != nil {
-		t.Skip("无法连接到数据库")
+		t.Fatalf("无法连接到数据库: %v", err)
 	}
 	defer dt.Close()
 	
-	// 模拟写入数据点
-	// 实际测试需要有效的数据点
+	// 写入测试数据点
+	now := time.Now()
+	points := []common.DataPoint{
+		{
+			Measurement: "test_measurement",
+			Tags: map[string]string{
+				"host": "test_host",
+				"region": "test_region",
+			},
+			Fields: map[string]interface{}{
+				"value": 42.5,
+				"count": 100,
+			},
+			Time: now,
+		},
+	}
+	
+	err = dt.WritePoints("testdb", points)
+	if err != nil {
+		t.Logf("WritePoints 错误: %v", err)
+	} else {
+		t.Logf("成功写入 %d 个数据点到 testdb.test_measurement", len(points))
+	}
 }

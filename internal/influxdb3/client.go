@@ -20,6 +20,7 @@ import (
 type Client3x struct {
 	baseURL    string
 	token      string
+	org        string           // v2 兼容模式需要
 	database   string
 	namespace  string
 	httpClient *http.Client
@@ -86,6 +87,7 @@ func NewV2CompatClient(config V2CompatConfig) (*Client3x, error) {
 	c := &Client3x{
 		baseURL:    strings.TrimSuffix(config.URL, "/"),
 		token:      config.Token,
+		org:        config.Org, // 添加 org 字段
 		database:   config.Database,
 		httpClient: httpClient,
 		v2Client:   v2Client,
@@ -233,6 +235,7 @@ func (c *Client3x) WriteLineProtocol(data string) error {
 		writeURL = c.baseURL + "/api/v2/write"
 		params := url.Values{}
 		params.Set("bucket", c.database)
+		params.Set("org", c.org) // 添加 org 参数
 		params.Set("precision", "ns")
 		writeURL += "?" + params.Encode()
 

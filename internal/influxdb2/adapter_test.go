@@ -2,6 +2,8 @@ package influxdb2
 
 import (
 	"testing"
+
+	"github.com/ygqygq2/influxdb-sync/internal/testutil"
 )
 
 func TestNewAdapter(t *testing.T) {
@@ -253,4 +255,121 @@ func TestAdapter_WritePoints(t *testing.T) {
 	
 	// 模拟写入数据点
 	// 实际测试需要有效的数据点
+}
+
+// Integration tests with real InfluxDB 2.x (docker)
+func TestAdapter_WritePoints_Integration(t *testing.T) {
+	testutil.SkipIfNoInfluxDB3(t, "http://localhost:18088")
+
+	adapter := &Adapter{
+		URL:    "http://localhost:18088",
+		Token:  "test3xtoken",
+		Org:    "testorg",
+		Bucket: "testbucket",
+	}
+
+	err := adapter.Connect()
+	if err != nil {
+		t.Fatalf("连接失败: %v", err)
+	}
+	defer adapter.Close()
+
+	// TODO: 添加真实写入测试
+	t.Log("InfluxDB 2.x WritePoints integration test placeholder")
+}
+
+func TestAdapter_GetMeasurements_Integration(t *testing.T) {
+	testutil.SkipIfNoInfluxDB3(t, "http://localhost:18088")
+
+	adapter := &Adapter{
+		URL:    "http://localhost:18088",
+		Token:  "test3xtoken",
+		Org:    "testorg",
+		Bucket: "testbucket",
+	}
+
+	err := adapter.Connect()
+	if err != nil {
+		t.Fatalf("连接失败: %v", err)
+	}
+	defer adapter.Close()
+
+	measurements, err := adapter.GetMeasurements("testbucket")
+	if err != nil {
+		t.Fatalf("GetMeasurements 失败: %v", err)
+	}
+
+	t.Logf("成功获取 %d 个 measurements", len(measurements))
+	if len(measurements) > 0 {
+		t.Logf("第一个 measurement: %s", measurements[0])
+	}
+}
+
+func TestAdapter_GetTagKeys_Integration(t *testing.T) {
+	testutil.SkipIfNoInfluxDB3(t, "http://localhost:18088")
+
+	adapter := &Adapter{
+		URL:    "http://localhost:18088",
+		Token:  "test3xtoken",
+		Org:    "testorg",
+		Bucket: "testbucket",
+	}
+
+	err := adapter.Connect()
+	if err != nil {
+		t.Fatalf("连接失败: %v", err)
+	}
+	defer adapter.Close()
+
+	// 先获取 measurements
+	measurements, err := adapter.GetMeasurements("testbucket")
+	if err != nil || len(measurements) == 0 {
+		t.Skip("没有可用的 measurements 进行测试")
+	}
+
+	// 测试获取第一个 measurement 的 tag keys
+	tagKeys, err := adapter.GetTagKeys("testbucket", measurements[0])
+	if err != nil {
+		t.Fatalf("GetTagKeys 失败: %v", err)
+	}
+
+	t.Logf("成功获取 %d 个 tag keys", len(tagKeys))
+	for key := range tagKeys {
+		t.Logf("  - %s", key)
+	}
+}
+
+func TestAdapter_QueryData_Integration(t *testing.T) {
+	testutil.SkipIfNoInfluxDB3(t, "http://localhost:18088")
+
+	adapter := &Adapter{
+		URL:    "http://localhost:18088",
+		Token:  "test3xtoken",
+		Org:    "testorg",
+		Bucket: "testbucket",
+	}
+
+	err := adapter.Connect()
+	if err != nil {
+		t.Fatalf("连接失败: %v", err)
+	}
+	defer adapter.Close()
+
+	// 先获取 measurements
+	measurements, err := adapter.GetMeasurements("testbucket")
+	if err != nil || len(measurements) == 0 {
+		t.Skip("没有可用的 measurements 进行测试")
+	}
+
+	// 查询数据
+	points, lastTime, err := adapter.QueryData("testbucket", measurements[0], 0, 100)
+	if err != nil {
+		t.Fatalf("QueryData 失败: %v", err)
+	}
+
+	t.Logf("成功查询 %d 个数据点, lastTime=%d", len(points), lastTime)
+	if len(points) > 0 {
+		t.Logf("第一个点: measurement=%s, time=%v, tags=%v, fields=%v",
+			points[0].Measurement, points[0].Time, points[0].Tags, points[0].Fields)
+	}
 }

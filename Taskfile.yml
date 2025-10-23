@@ -87,14 +87,61 @@ tasks:
       - go test -v -race ./...
 
   test-coverage:
-    desc: 运行测试并生成覆盖率报告
+    desc: 运行测试并生成覆盖率报告（支持 Docker 环境）
     cmds:
-      - go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
-      - go tool cover -html=coverage.out -o coverage.html
       - |
-        COVERAGE=$(go tool cover -func=coverage.out | grep total: | awk '{print $3}' | sed 's/%//')
-        echo "当前测试覆盖率: ${COVERAGE}%"
+        # 如果设置了 USE_DOCKER=true，则启动 Docker Compose 环境
+        if [ "$USE_DOCKER" = "true" ]; then
+          echo "🐳 启动 Docker Compose 环境用于单元测试..."
+          DOCKER_COMPOSE_CMD="docker-compose"
+          if ! command -v docker-compose >/dev/null 2>&1; then
+            if docker compose version >/dev/null 2>&1; then
+              DOCKER_COMPOSE_CMD="docker compose"
+            fi
+          fi
 
+          # 启动测试环境（使用 1x-2x 配置，包含 1.x 和 2.x/3.x 兼容）
+          $DOCKER_COMPOSE_CMD -f deployments/docker-compose-1x-2x.yml up -d
+          echo "⏳ 等待服务就绪..."
+          sleep 10
+
+          # 设置环境变量启用集成测试
+          export SKIP_INTEGRATION=false
+          CLEANUP_DOCKER=true
+        else
+          echo "ℹ️  跳过 Docker 环境（设置 USE_DOCKER=true 启用）"
+          export SKIP_INTEGRATION=true
+        fi
+
+        # 运行测试
+        go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+        TEST_EXIT=$?
+
+        # 生成覆盖率报告
+        go tool cover -html=coverage.out -o coverage.html
+        COVERAGE=$(go tool cover -func=coverage.out | grep total: | awk '{print $3}' | sed 's/%//')
+        echo ""
+        echo "📊 当前测试覆盖率: ${COVERAGE}%"
+
+        # 清理 Docker 环境
+        if [ "$CLEANUP_DOCKER" = "true" ]; then
+          echo "🧹 清理 Docker 环境..."
+          DOCKER_COMPOSE_CMD="docker-compose"
+          if ! command -v docker-compose >/dev/null 2>&1; then
+            if docker compose version >/dev/null 2>&1; then
+              DOCKER_COMPOSE_CMD="docker compose"
+            fi
+          fi
+          $DOCKER_COMPOSE_CMD -f deployments/docker-compose-1x-2x.yml down
+        fi
+
+        # 检查测试结果
+        if [ $TEST_EXIT -ne 0 ]; then
+          echo "❌ 测试失败"
+          exit 1
+        fi
+
+        # 检查覆盖率
         if (( $(echo "$COVERAGE < {{.COVERAGE_THRESHOLD}}" | bc -l) )); then
           echo "❌ 测试覆盖率 ${COVERAGE}% 低于要求的 {{.COVERAGE_THRESHOLD}}%"
           exit 1

@@ -165,7 +165,13 @@ func (ds *DataSource3x) GetMeasurements(database string) ([]string, error) {
 			schema.measurements(bucket: "%s")
 		`, database)
 
-		result, err := ds.client.QueryFlux(query, "")
+		// 从 config 获取 org
+		org := ""
+		if v2cfg, ok := ds.config.(V2CompatConfig); ok {
+			org = v2cfg.Org
+		}
+		
+		result, err := ds.client.QueryFlux(query, org)
 		if err != nil {
 			return nil, err
 		}
@@ -243,10 +249,19 @@ func (ds *DataSource3x) GetTagKeys(database, measurement string) (map[string]boo
 	case "v2":
 		query := fmt.Sprintf(`
 			import "influxdata/influxdb/schema"
-			schema.tagKeys(bucket: "%s", measurement: "%s")
+			schema.tagKeys(
+				bucket: "%s",
+				predicate: (r) => r._measurement == "%s"
+			)
 		`, database, measurement)
 
-		result, err := ds.client.QueryFlux(query, "")
+		// 从 config 获取 org
+		org := ""
+		if v2cfg, ok := ds.config.(V2CompatConfig); ok {
+			org = v2cfg.Org
+		}
+		
+		result, err := ds.client.QueryFlux(query, org)
 		if err != nil {
 			return nil, err
 		}
@@ -342,7 +357,14 @@ func (ds *DataSource3x) queryDataV2(database, measurement string, startTime int6
 	`, database, measurement, startFilter, batchSize)
 
 	logx.Debug(fmt.Sprintf("执行 Flux 查询: %s", query))
-	result, err := ds.client.QueryFlux(query, "")
+	
+	// 从 config 获取 org
+	org := ""
+	if v2cfg, ok := ds.config.(V2CompatConfig); ok {
+		org = v2cfg.Org
+	}
+	
+	result, err := ds.client.QueryFlux(query, org)
 	if err != nil {
 		return nil, 0, err
 	}

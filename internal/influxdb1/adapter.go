@@ -13,7 +13,7 @@ import (
 
 // InfluxDB 1.x 数据源实现
 type DataSource struct {
-	cli    client.Client
+	cli    InfluxClient
 	config DataSourceConfig
 }
 
@@ -25,7 +25,7 @@ type DataSourceConfig struct {
 
 // InfluxDB 1.x 数据目标实现
 type DataTarget struct {
-	cli    client.Client
+	cli    InfluxClient
 	config DataTargetConfig
 }
 

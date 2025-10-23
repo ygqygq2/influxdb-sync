@@ -54,6 +54,8 @@ jobs:
           install-only: true
 
       - name: Run CI quality checks
+        env:
+          USE_DOCKER: true
         run: task ci-quality
 
       - name: Upload binary artifact

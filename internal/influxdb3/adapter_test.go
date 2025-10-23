@@ -435,3 +435,230 @@ func TestDataTarget3x_Close(t *testing.T) {
 		t.Errorf("Close() error = %v", err)
 	}
 }
+
+// Integration tests with real InfluxDB (docker)
+func TestDataTarget3x_WriteLineProtocol_Integration(t *testing.T) {
+	// 使用 docker 容器 influxdb:2.7 在 18088 端口
+	config := V2CompatConfig{
+		URL:      "http://localhost:18088",
+		Token:    "test3xtoken",
+		Org:      "testorg",
+		Database: "testbucket",
+	}
+
+	dt := NewV2CompatDataTarget(config)
+	if dt == nil {
+		t.Fatal("NewV2CompatDataTarget returned nil")
+	}
+
+	// 尝试连接
+	err := dt.Connect()
+	if err != nil {
+		t.Skipf("无法连接到 InfluxDB 3.x (v2 compat) at localhost:18088: %v", err)
+		return
+	}
+	defer dt.Close()
+
+	// 测试写入数据
+	points := []common.DataPoint{
+		{
+			Measurement: "test_measurement_3x",
+			Tags: map[string]string{
+				"host":   "server01",
+				"region": "us-west",
+			},
+			Fields: map[string]interface{}{
+				"cpu":    float64(80.5),
+				"memory": float64(1024),
+				"status": "online",
+			},
+			Time: time.Now(),
+		},
+		{
+			Measurement: "test_measurement_3x",
+			Tags: map[string]string{
+				"host":   "server02",
+				"region": "us-east",
+			},
+			Fields: map[string]interface{}{
+				"cpu":    float64(60.3),
+				"memory": float64(2048),
+			},
+			Time: time.Now().Add(-time.Minute),
+		},
+	}
+
+	err = dt.WritePoints("testbucket", points)
+	if err != nil {
+		t.Fatalf("WritePoints() error = %v", err)
+	}
+
+	t.Log("Successfully wrote points to InfluxDB 3.x (v2 compat)")
+}
+
+func TestDataSource3x_QueryData_V2Compat_Integration(t *testing.T) {
+	// 使用 docker 容器 influxdb:2.7 在 18088 端口
+	config := V2CompatConfig{
+		URL:      "http://localhost:18088",
+		Token:    "test3xtoken",
+		Org:      "testorg",
+		Database: "testbucket",
+	}
+
+	ds := NewV2CompatDataSource(config)
+	if ds == nil {
+		t.Fatal("NewV2CompatDataSource returned nil")
+	}
+
+	err := ds.Connect()
+	if err != nil {
+		t.Skipf("无法连接到 InfluxDB 3.x (v2 compat) at localhost:18088: %v", err)
+		return
+	}
+	defer ds.Close()
+
+	// 先写入测试数据
+	dt := NewV2CompatDataTarget(config)
+	_ = dt.Connect()
+	testPoints := []common.DataPoint{
+		{
+			Measurement: "query_test_3x",
+			Tags:        map[string]string{"sensor": "temp01"},
+			Fields:      map[string]interface{}{"value": float64(25.5)},
+			Time:        time.Now(),
+		},
+	}
+	_ = dt.WritePoints("testbucket", testPoints)
+	dt.Close()
+
+	// 等待数据写入
+	time.Sleep(2 * time.Second)
+
+	// 测试查询 (startTime 使用 0 表示从最早开始，batchSize 使用 1000)
+	points, lastTime, err := ds.QueryData("testbucket", "query_test_3x", 0, 1000)
+	if err != nil {
+		t.Fatalf("QueryData() error = %v", err)
+	}
+
+	if len(points) == 0 {
+		t.Log("Warning: No points returned, but no error")
+	} else {
+		t.Logf("Successfully queried %d points from InfluxDB 3.x (v2 compat), lastTime=%d", len(points), lastTime)
+	}
+}
+
+func TestDataSource3x_GetTagKeys_V2Compat_Integration(t *testing.T) {
+	config := V2CompatConfig{
+		URL:      "http://localhost:18088",
+		Token:    "test3xtoken",
+		Org:      "testorg",
+		Database: "testbucket",
+	}
+
+	ds := NewV2CompatDataSource(config)
+	if ds == nil {
+		t.Fatal("NewV2CompatDataSource returned nil")
+	}
+
+	err := ds.Connect()
+	if err != nil {
+		t.Skipf("无法连接到 InfluxDB 3.x (v2 compat) at localhost:18088: %v", err)
+		return
+	}
+	defer ds.Close()
+
+	// 先写入带标签的测试数据
+	dt := NewV2CompatDataTarget(config)
+	_ = dt.Connect()
+	testPoints := []common.DataPoint{
+		{
+			Measurement: "tagkeys_test_3x",
+			Tags: map[string]string{
+				"location": "beijing",
+				"device":   "sensor01",
+			},
+			Fields: map[string]interface{}{"temp": float64(23.5)},
+			Time:   time.Now(),
+		},
+	}
+	_ = dt.WritePoints("testbucket", testPoints)
+	dt.Close()
+
+	time.Sleep(2 * time.Second)
+
+	// 测试获取 tag keys
+	tagKeys, err := ds.GetTagKeys("testbucket", "tagkeys_test_3x")
+	if err != nil {
+		t.Fatalf("GetTagKeys() error = %v", err)
+	}
+
+	if len(tagKeys) == 0 {
+		t.Log("Warning: No tag keys returned")
+	} else {
+		t.Logf("Successfully got %d tag keys: %v", len(tagKeys), tagKeys)
+	}
+}
+
+func TestDataSource3x_GetMeasurements_V2Compat_Integration(t *testing.T) {
+	config := V2CompatConfig{
+		URL:      "http://localhost:18088",
+		Token:    "test3xtoken",
+		Org:      "testorg",
+		Database: "testbucket",
+	}
+
+	ds := NewV2CompatDataSource(config)
+	if ds == nil {
+		t.Fatal("NewV2CompatDataSource returned nil")
+	}
+
+	err := ds.Connect()
+	if err != nil {
+		t.Skipf("无法连接到 InfluxDB 3.x (v2 compat) at localhost:18088: %v", err)
+		return
+	}
+	defer ds.Close()
+
+	// 测试获取 measurements
+	measurements, err := ds.GetMeasurements("testbucket")
+	if err != nil {
+		t.Fatalf("GetMeasurements() error = %v", err)
+	}
+
+	t.Logf("Successfully got %d measurements", len(measurements))
+	if len(measurements) > 0 {
+		t.Logf("First measurement: %s", measurements[0])
+	}
+}
+
+func TestDataSource3x_GetDatabases_V2Compat_Integration(t *testing.T) {
+	config := V2CompatConfig{
+		URL:      "http://localhost:18088",
+		Token:    "test3xtoken",
+		Org:      "testorg",
+		Database: "testbucket",
+	}
+
+	ds := NewV2CompatDataSource(config)
+	if ds == nil {
+		t.Fatal("NewV2CompatDataSource returned nil")
+	}
+
+	err := ds.Connect()
+	if err != nil {
+		t.Skipf("无法连接到 InfluxDB 3.x (v2 compat) at localhost:18088: %v", err)
+		return
+	}
+	defer ds.Close()
+
+	// 测试获取 databases（在 v2 compat 模式下返回 buckets）
+	databases, err := ds.GetDatabases()
+	if err != nil {
+		t.Fatalf("GetDatabases() error = %v", err)
+	}
+
+	t.Logf("Successfully got %d databases/buckets", len(databases))
+	for _, db := range databases {
+		t.Logf("  - %s", db)
+	}
+}
